@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
-<head>
 
+<head>
 <meta charset="UTF-8">
 <title>Painel de Frequência</title>
 
@@ -47,7 +47,7 @@ border-bottom:1px solid #ddd;
 
 <canvas id="grafico"></canvas>
 
-<h3>Alunos</h3>
+<h3>Lista de alunos</h3>
 
 <table>
 
@@ -70,8 +70,11 @@ border-bottom:1px solid #ddd;
 const SHEET_ID="1NBBtdsqbR4FzNyNsCuG3K3HdSRk6QzT-QR2mnjHEXJ0";
 
 let dados=[];
+let chart;
 
-fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`)
+function carregarTurmas(){
+
+fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=Turmas`)
 .then(res=>res.text())
 .then(data=>{
 
@@ -79,35 +82,57 @@ const json=JSON.parse(data.substring(47).slice(0,-2));
 
 const rows=json.table.rows;
 
-rows.forEach(r=>{
-
-dados.push({
-turma:r.c[0]?.v,
-aluno:r.c[1]?.v,
-faltas:r.c[2]?.v || 0
-});
-
-});
-
-const turmas=[...new Set(dados.map(d=>d.turma))];
-
 const select=document.getElementById("turma");
 
-turmas.forEach(t=>{
+rows.forEach(r=>{
+
+let turma=r.c[0]?.v;
 
 let opt=document.createElement("option");
-opt.value=t;
-opt.textContent=t;
+
+opt.value=turma;
+opt.textContent=turma;
 
 select.appendChild(opt);
 
 });
 
-select.addEventListener("change",()=>mostrar(select.value));
+select.addEventListener("change",()=>carregarDados(select.value));
 
-mostrar(turmas[0]);
+carregarDados(rows[0].c[0].v);
 
 });
+
+}
+
+function carregarDados(turma){
+
+fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(turma)}`)
+.then(res=>res.text())
+.then(data=>{
+
+const json=JSON.parse(data.substring(47).slice(0,-2));
+
+const rows=json.table.rows;
+
+dados=[];
+
+rows.forEach(r=>{
+
+dados.push({
+
+aluno:r.c[0]?.v,
+faltas:r.c[1]?.v || 0
+
+});
+
+});
+
+mostrar();
+
+});
+
+}
 
 function classificar(f){
 
@@ -118,9 +143,7 @@ return "Desistente";
 
 }
 
-function mostrar(turma){
-
-const alunos=dados.filter(a=>a.turma===turma);
+function mostrar(){
 
 let freq=0;
 let risco=0;
@@ -128,9 +151,10 @@ let poss=0;
 let desist=0;
 
 const tabela=document.getElementById("tabela");
+
 tabela.innerHTML="";
 
-alunos.forEach(a=>{
+dados.forEach(a=>{
 
 let c=classificar(a.faltas);
 
@@ -151,7 +175,11 @@ tabela.appendChild(tr);
 
 });
 
-new Chart(document.getElementById("grafico"),{
+if(chart){
+chart.destroy();
+}
+
+chart=new Chart(document.getElementById("grafico"),{
 
 type:"pie",
 
@@ -166,7 +194,10 @@ data:[freq,risco,poss,desist]
 
 }
 
+carregarTurmas();
+
 </script>
 
 </body>
+
 </html>
