@@ -16,16 +16,11 @@ padding:20px;
 }
 
 .container{
-max-width:1100px;
+max-width:1000px;
 margin:auto;
 background:white;
 padding:20px;
 border-radius:8px;
-}
-
-select,input{
-padding:8px;
-margin-bottom:15px;
 }
 
 table{
@@ -38,14 +33,6 @@ padding:8px;
 border-bottom:1px solid #ddd;
 }
 
-.card{
-display:inline-block;
-padding:10px 20px;
-margin:5px;
-background:#eee;
-border-radius:6px;
-}
-
 </style>
 
 </head>
@@ -56,23 +43,11 @@ border-radius:6px;
 
 <h2>Painel de Frequência</h2>
 
-<select id="turma">
-
-<option value="Eletrotecnica_010">Eletrotecnica 010</option>
-<option value="Eletrotecnica_011">Eletrotecnica 011</option>
-<option value="Eletrotecnica_012">Eletrotecnica 012</option>
-
-</select>
-
-<br>
-
-<div id="cards"></div>
+<select id="turma"></select>
 
 <canvas id="grafico"></canvas>
 
-<h3>Lista de alunos</h3>
-
-<input id="busca" placeholder="Buscar aluno">
+<h3>Alunos</h3>
 
 <table>
 
@@ -80,7 +55,7 @@ border-radius:6px;
 <tr>
 <th>Aluno</th>
 <th>Faltas</th>
-<th>Classificação</th>
+<th>Situação</th>
 </tr>
 </thead>
 
@@ -96,17 +71,7 @@ const SHEET_ID="1NBBtdsqbR4FzNyNsCuG3K3HdSRk6QzT-QR2mnjHEXJ0";
 
 let dados=[];
 
-document.getElementById("turma").addEventListener("change",carregar);
-
-document.getElementById("busca").addEventListener("input",filtrar);
-
-carregar();
-
-function carregar(){
-
-const aba=document.getElementById("turma").value;
-
-fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${aba}`)
+fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`)
 .then(res=>res.text())
 .then(data=>{
 
@@ -114,24 +79,35 @@ const json=JSON.parse(data.substring(47).slice(0,-2));
 
 const rows=json.table.rows;
 
-dados=[];
-
 rows.forEach(r=>{
 
 dados.push({
-
-aluno:r.c[0]?.v,
-faltas:r.c[1]?.v || 0
-
+turma:r.c[0]?.v,
+aluno:r.c[1]?.v,
+faltas:r.c[2]?.v || 0
 });
 
 });
 
-mostrar(dados);
+const turmas=[...new Set(dados.map(d=>d.turma))];
+
+const select=document.getElementById("turma");
+
+turmas.forEach(t=>{
+
+let opt=document.createElement("option");
+opt.value=t;
+opt.textContent=t;
+
+select.appendChild(opt);
 
 });
 
-}
+select.addEventListener("change",()=>mostrar(select.value));
+
+mostrar(turmas[0]);
+
+});
 
 function classificar(f){
 
@@ -142,7 +118,9 @@ return "Desistente";
 
 }
 
-function mostrar(lista){
+function mostrar(turma){
+
+const alunos=dados.filter(a=>a.turma===turma);
 
 let freq=0;
 let risco=0;
@@ -150,10 +128,9 @@ let poss=0;
 let desist=0;
 
 const tabela=document.getElementById("tabela");
-
 tabela.innerHTML="";
 
-lista.forEach(a=>{
+alunos.forEach(a=>{
 
 let c=classificar(a.faltas);
 
@@ -174,15 +151,6 @@ tabela.appendChild(tr);
 
 });
 
-document.getElementById("cards").innerHTML=`
-
-<div class="card">Frequentando: ${freq}</div>
-<div class="card">Risco: ${risco}</div>
-<div class="card">Possível desistência: ${poss}</div>
-<div class="card">Desistentes: ${desist}</div>
-
-`;
-
 new Chart(document.getElementById("grafico"),{
 
 type:"pie",
@@ -195,16 +163,6 @@ data:[freq,risco,poss,desist]
 }
 
 });
-
-}
-
-function filtrar(){
-
-const termo=document.getElementById("busca").value.toLowerCase();
-
-const filtrados=dados.filter(a=>a.aluno.toLowerCase().includes(termo));
-
-mostrar(filtrados);
 
 }
 
