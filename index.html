@@ -1,130 +1,967 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<title>Controle de Frequência</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SIMULADO - SAEP - CIBER SISTEMAS</title>
 <style>
+  /* Base e normalização leve */
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    display: flex;
+    min-height: 100vh;        /* fallback */
+    min-height: 100dvh;       /* viewport real em mobile */
+    background: #f5f5f5;
+  }
 
-body{
-font-family:Arial;
-background:#f4f4f4;
-margin:20px;
+  /* Índice (sidebar no desktop, barra no mobile) */
+  #indice {
+    width: 300px;
+    background-color: #004aad;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 10px;
+  }
+
+#indice .logo-indice {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto 10px auto; /* centraliza e dá espaço */
 }
 
-.container{
-max-width:900px;
-margin:auto;
-background:white;
-padding:20px;
-border-radius:8px;
-}
+  #indice h2 {
+    text-align: center;
+    margin: 0 0 10px;
+    font-weight: normal;
+    letter-spacing: 2px;
+  }
+  #indice button {
+    background-color: transparent;
+    border: 2px solid white;
+    color: white;
+    font-weight: bold;
+    margin: 4px auto;
+    cursor: pointer;
+    padding: 8px 0;
+    width: 150px;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+    display: block;
+  }
+  #indice button.green {
+    background-color: #4CAF50;
+    border-color: #4CAF50;
+  }
+  #indice button:hover:not(.green) {
+    background-color: #3a6ecd;
+  }
 
-select{
-padding:8px;
-margin-bottom:20px;
+  /* Conteúdo: agora ocupa toda a largura disponível */
+  #conteudo {
+    margin-left: 320px;                 /* espaço da sidebar */
+    padding: 20px 30px 80px 30px;
+    flex: 1;
+    width: calc(100% - 180px);          /* garante uso total da largura */
+    max-width: 100%;                    /* remove limite de 900px */
+    background: white;
+  }
+
+  .questao {
+    margin-bottom: 30px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 20px;
+  }
+  .enunciado {
+    text-align: justify;
+    font-weight: normal;
+    margin-bottom: 12px;
+  }
+  .alternativas label {
+    display: block;
+    margin-bottom: 6px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .alternativas input[type="radio"] {
+    margin-right: 8px;
+    cursor: pointer;
+  }
+  .btn-gabarito {
+    margin-top: 8px;
+    padding: 8px 15px;
+    cursor: pointer;
+    background-color: #004aad;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    user-select: none;
+  }
+  .btn-gabarito:disabled {
+    background-color: #888;
+    cursor: not-allowed;
+  }
+  .gabarito {
+    margin-top: 10px;
+    background-color: #e3f2e3;
+    border-left: 4px solid #4CAF50;
+    padding: 10px;
+    display: none;
+    font-weight: bold;
+  }
+  #resultado {
+    margin-top: 40px;
+    padding: 15px;
+    background-color: #f0f0f0;
+    border-radius: 6px;
+    font-size: 1.1em;
+  }
+  #botoes-finais {
+    margin-top: 40px;
+    display: flex;
+    gap: 20px;
+  }
+  #botoes-finais button {
+    padding: 12px 20px;
+    font-size: 1em;
+    cursor: pointer;
+    background-color: #004aad;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    user-select: none;
+    flex: 1;
+  }
+  #botoes-finais button:hover {
+    background-color: #003580;
+  }
+
+  /* ===== Responsividade ===== */
+  /* Tablets: pequenos ajustes de padding */
+  @media (max-width: 1024px) {
+    #conteudo { padding: 16px 20px 80px 20px; }
+  }
+
+  /* Mobile: índice vira barra superior rolável, conteúdo ocupa 100% */
+  
+@media (max-width: 768px) {
+  /* Índice: vertical, fixo à esquerda, altura total */
+  #indice {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 180px;       /* ajuste se quiser mais/menos largo */
+    height: 100vh;
+    background-color: #004aad;
+    display: flex;
+    flex-direction: column;   /* <-- mantém vertical */
+    align-items: stretch;
+    padding: 10px;
+    overflow-y: auto;         /* rola verticalmente */
+    overflow-x: hidden;
+    white-space: normal;
+    z-index: 9999;
+  }
+
+  /* Logo mais compacta no mobile */
+  #indice .logo-indice {
+    max-width: 90%;
+    height: auto;
+    margin: 0 auto 10px;
+  }
+
+  /* Título */
+  #indice h2 {
+    margin: 0 0 10px 0;
+    text-align: center;
+    flex: 0 0 auto;
+  }
+
+  /* Botões do índice preenchendo a largura da barra */
+  #indice button {
+    width: 100%;           /* ocupa a largura do índice */
+    margin: 4px 0;
+    padding: 8px 0;
+    display: block;
+  }
+
+  /* Conteúdo: desloca para a direita, abaixo do índice fixo */
+  body {
+    flex-direction: row;   /* mantém layout lado a lado */
+  }
+  #conteudo {
+    margin-left: 200px;    /* 180px do índice + 20px de folga */
+    width: calc(100% - 200px);
+    padding: 14px 16px 80px 16px;
+  }
 }
 
 </style>
-</head>
 
+</head>
 <body>
 
-<div class="container">
+<div id="indice">
 
-<h2>Controle de Frequência</h2>
+<img src="data:image/webp;base64,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" alt="Logo" class="logo-indice">
 
-<select id="turma"></select>
+  <h2>ÍNDICE</h2>
+  <button data-q="1">1</button>
+  <button data-q="2">2</button>
+  <button data-q="3">3</button>
+  <button data-q="4">4</button>
+  <button data-q="5">5</button>
+  <button data-q="6">6</button>
+  <button data-q="7">7</button>
+  <button data-q="8">8</button>
+  <button data-q="9">9</button>
+  <button data-q="10">10</button>
+  <button data-q="11">11</button>
+  <button data-q="12">12</button>
+  <button data-q="13">13</button>
+  <button data-q="14">14</button>
+  <button data-q="15">15</button>
+  <button data-q="16">16</button>
+  <button data-q="17">17</button>
+  <button data-q="18">18</button>
+  <button data-q="19">19</button>
+  <button data-q="20">20</button>
+  <button data-q="21">21</button>
+  <button data-q="22">22</button>
+  <button data-q="23">23</button>
+  <button data-q="24">24</button>
+  <button data-q="25">25</button>
+  <button data-q="26">26</button>
+  <button data-q="27">27</button>
+  <button data-q="28">28</button>
+  <button data-q="29">29</button>
+  <button data-q="30">30</button>
+  <button data-q="31">31</button>
+  <button data-q="32">32</button>
+  <button data-q="33">33</button>
+  <button data-q="34">34</button>
+  <button data-q="35">35</button>
+  <button data-q="36">36</button>
+  <button data-q="37">37</button>
+  <button data-q="38">38</button>
+  <button data-q="39">39</button>
+  <button data-q="40">40</button>
+</div>
 
-<canvas id="grafico"></canvas>
+<div id="conteudo">
 
+  <div class="questao" id="q1">
+    <div class="enunciado">1. Em uma cidade inteligente, semáforos, câmeras de tráfego e sensores de fluxo de veículos estão interligados a um centro de controle capaz de ajustar a sinalização automaticamente para melhorar a mobilidade urbana. Esse sistema combina automação, redes de comunicação e algoritmos inteligentes para tomar decisões em tempo real sem intervenção humana. Esse tipo de sistema é denominado:</div>
+    <div class="alternativas">
+      <label><input type="radio" name="q1" value="A" /> A) Sistema exclusivo de redes de telecomunicações</label>
+      <label><input type="radio" name="q1" value="B" /> B) Sistema físico que interage com o ambiente humano</label>
+      <label><input type="radio" name="q1" value="C" /> C) Ciber sistema</label>
+      <label><input type="radio" name="q1" value="D" /> D) Hardware dedicado a jogos digitais</label>
+    </div>
+    <button class="btn-gabarito" data-q="1" disabled>Mostrar Gabarito</button>
+    <div class="gabarito" id="gab1">Gabarito: C</div>
+  </div>
+
+  <div class="questao" id="q2">
+    <div class="enunciado">2. Em uma fábrica inteligente, sensores de temperatura, câmeras de segurança e máquinas automatizadas estão conectados a uma rede que envia dados em tempo real para uma central de controle. Essa integração permite que os equipamentos “conversem” entre si e tomem decisões automáticas para otimizar a produção e aumentar a segurança. A tecnologia que possibilita essa interconexão é conhecida pela sigla:</div>
+    <div class="alternativas">
+      <label><input type="radio" name="q2" value="A" /> A) Interface of Transmission</label>
+      <label><input type="radio" name="q2" value="B" /> B) Internet of Things</label>
+      <label><input type="radio" name="q2" value="C" /> C) Input of Tools</label>
+      <label><input type="radio" name="q2" value="D" /> D) Internet on Track</label>
+    </div>
+    <button class="btn-gabarito" data-q="2" disabled>Mostrar Gabarito</button>
+    <div class="gabarito" id="gab2">Gabarito: B</div>
+  </div>
+
+  <div class="questao" id="q3">
+    <div class="enunciado">3. Ao acessar o site de um banco pelo computador ou celular, o usuário percebe que, ao lado do endereço na barra do navegador, aparece um ícone de cadeado. Esse cadeado indica que a conexão está protegida por criptografia, garantindo que as informações trocadas entre o cliente e o servidor não possam ser interceptadas ou alteradas. O protocolo responsável por essa comunicação segura é:</div>
+    <div class="alternativas">
+      <label><input type="radio" name="q3" value="A" /> A) FTP</label>
+      <label><input type="radio" name="q3" value="B" /> B) HTTP</label>
+      <label><input type="radio" name="q3" value="C" /> C) HTTPS</label>
+      <label><input type="radio" name="q3" value="D" /> D) SMTP</label>
+    </div>
+    <button class="btn-gabarito" data-q="3" disabled>Mostrar Gabarito</button>
+    <div class="gabarito" id="gab3">Gabarito: C</div>
+  </div>
+
+  <div class="questao" id="q4">
+    <div class="enunciado">4. Em uma empresa que manipula dados confidenciais, é fundamental proteger a rede contra acessos não autorizados e possíveis ataques externos. Para isso, é utilizado um sistema que monitora e controla o fluxo de informações que entram e saem da rede, bloqueando conexões suspeitas e garantindo a segurança dos dados corporativos. A função desse sistema, chamado firewall, é:</div>
+    <div class="alternativas">
+      <label><input type="radio" name="q4" value="A" /> A) Armazenar senhas</label>
+      <label><input type="radio" name="q4" value="B" /> B) Proteger contra falhas elétricas</label>
+      <label><input type="radio" name="q4" value="C" /> C) Controlar o tráfego de rede e bloquear acessos não autorizados</label>
+      <label><input type="radio" name="q4" value="D" /> D) Atualizar sistemas automaticamente</label>
+    </div>
+    <button class="btn-gabarito" data-q="4" disabled>Mostrar Gabarito</button>
+    <div class="gabarito" id="gab4">Gabarito: C</div>
+  </div>
+
+  <div class="questao" id="q5">
+    <div class="enunciado">5. Uma fábrica automatizada conecta seus equipamentos à internet para permitir o monitoramento remoto e o ajuste em tempo real dos processos produtivos. Embora essa conexão traga muitos benefícios, ela também expõe o sistema a possíveis ameaças externas. Um dos principais riscos associados a um sistema automatizado conectado à internet é:</div>
+    <div class="alternativas">
+      <label><input type="radio" name="q5" value="A" /> A) A perda de conectores físicos</label>
+      <label><input type="radio" name="q5" value="B" /> B) A redução do tempo de produção</label>
+      <label><input type="radio" name="q5" value="C" /> C) O aumento da eficiência energética</label>
+      <label><input type="radio" name="q5" value="D" /> D) A vulnerabilidade a ataques cibernéticos</label>
+    </div>
+    <button class="btn-gabarito" data-q="5" disabled>Mostrar Gabarito</button>
+    <div class="gabarito" id="gab5">Gabarito: D</div>
+  </div>
+
+  <div class="questao" id="q6">
+    <div class="enunciado">6. Em uma linha de produção automatizada, os controladores lógicos programáveis (CLPs) são configurados para executar sequências de comandos que gerenciam máquinas e sensores. Para facilitar a programação desses dispositivos, utiliza-se uma linguagem visual que representa circuitos elétricos de forma simplificada e intuitiva. A linguagem mais utilizada para programar CLPs é:</div>
+    <div class="alternativas">
+      <label><input type="radio" name="q6" value="A" /> A) HTML</label>
+      <label><input type="radio" name="q6" value="B" /> B) Ladder</label>
+      <label><input type="radio" name="q6" value="C" /> C) C++</label>
+      <label><input type="radio" name="q6" value="D" /> D) JavaScript</label>
+    </div>
+    <button class="btn-gabarito" data-q="6" disabled>Mostrar Gabarito</button>
+    <div class="gabarito" id="gab6">Gabarito: B</div>
+  </div>
+
+  <div class="questao" id="q7">
+    <div class="enunciado">7. Em sistemas de automação industrial, um equipamento essencial para controlar máquinas e processos é conhecido pela sigla “PLC”. Esse dispositivo pode ser programado para executar tarefas específicas de controle lógico, substituindo sistemas elétricos convencionais. A sigla “PLC” significa:</div>
+    <div class="alternativas">
+      <label><input type="radio" name="q7" value="A" /> A) Programmable Logic Controller</label>
+      <label><input type="radio" name="q7" value="B" /> B) Protocol Limited Control</label>
+      <label><input type="radio" name="q7" value="C" /> C) Power Level Control</label>
+      <label><input type="radio" name="q7" value="D" /> D) Programming Logic Converter</label>
+    </div>
+    <button class="btn-gabarito" data-q="7" disabled>Mostrar Gabarito</button>
+    <div class="gabarito" id="gab7">Gabarito: A</div>
+  </div>
+
+  <div class="questao" id="q8">
+    <div class="enunciado">8. No desenvolvimento de programas para controladores lógicos programáveis, o diagrama Ladder é uma representação gráfica que facilita a visualização das condições e comandos. Nesse diagrama, o contato normalmente aberto (NO) simboliza uma condição que deve ser verdadeira para que a linha de comando seja ativada, permitindo o funcionamento do circuito. O contato NO representa:</div>
+    <div class="alternativas">
+      <label><input type="radio" name="q8" value="A" /> A) Uma saída de força</label>
+      <label><input type="radio" name="q8" value="B" /> B) Um dispositivo de controle analógico</label>
+      <label><input type="radio" name="q8" value="C" /> C) Uma condição que precisa ser satisfeita para ativar a linha</label>
+      <label><input type="radio" name="q8" value="D" /> D) Uma falha no circuito</label>
+    </div>
+    <button class="btn-gabarito" data-q="8" disabled>Mostrar Gabarito</button>
+    <div class="gabarito" id="gab8">Gabarito: C</div>
+  </div>
+
+  <div class="questao" id="q9">
+    <div class="enunciado">9. Na lógica aplicada à automação e eletrônica, os circuitos utilizam portas lógicas para tomar decisões baseadas em sinais de entrada. A porta lógica que representa a função “OU” permite a passagem do sinal quando pelo menos uma das entradas está ativa. O elemento lógico que representa essa função é:</div>
+    <div class="alternativas">
+      <label><input type="radio" name="q9" value="A" /> A) AND</label>
+      <label><input type="radio" name="q9" value="B" /> B) NOT</label>
+      <label><input type="radio" name="q9" value="C" /> C) NAND</label>
+      <label><input type="radio" name="q9" value="D" /> D) OR</label>
+    </div>
+    <button class="btn-gabarito" data-q="9" disabled>Mostrar Gabarito</button>
+    <div class="gabarito" id="gab9">Gabarito: D</div>
+  </div>
+
+  <div class="questao" id="q10">
+    <div class="enunciado">10. Em processos industriais, sensores são usados para detectar a presença ou a proximidade de objetos sem contato físico. O sensor capacitivo é capaz de identificar objetos metálicos e não metálicos, tornando-o útil para diversas aplicações de controle e automação. A função principal de um sensor capacitivo é:</div>
+    <div class="alternativas">
+      <label><input type="radio" name="q10" value="A" /> A) Medir temperatura</label>
+      <label><input type="radio" name="q10" value="B" /> B) Detectar proximidade de objetos metálicos e não metálicos</label>
+      <label><input type="radio" name="q10" value="C" /> C) Medir pressão hidráulica</label>
+      <label><input type="radio" name="q10" value="D" /> D) Transmitir dados sem fio</label>
+    </div>
+    <button class="btn-gabarito" data-q="10" disabled>Mostrar Gabarito</button>
+    <div class="gabarito" id="gab10">Gabarito: B</div>
+  </div>
+
+  <div class="questao" id="q11">
+    <div class="enunciado">11. Em uma fábrica automatizada, diversos dispositivos precisam se comunicar de forma rápida e confiável para garantir o funcionamento correto dos processos. Para isso, é utilizado um protocolo específico, amplamente adotado em redes industriais, que permite a troca eficiente de dados entre controladores e sensores. O principal protocolo usado em redes industriais de automação é:</div>
+    <div class="alternativas">
+      <label><input type="radio" name="q11" value="A" /> A) HTTP</label>
+      <label><input type="radio" name="q11" value="B" /> B) Modbus</label>
+      <label><input type="radio" name="q11" value="C" /> C) POP3</label>
+      <label><input type="radio" name="q11" value="D" /> D) VoIP</label>
+    </div>
+    <button class="btn-gabarito" data-q="11" disabled>Mostrar Gabarito</button>
+    <div class="gabarito" id="gab11">Gabarito: B</div>
+  </div>
+
+  <div class="questao" id="q12">
+    <div class="enunciado">12. Em uma rede de computadores, cada dispositivo conectado possui um identificador único que permite o envio e recebimento de informações corretamente entre máquinas. Esse identificador é conhecido como endereço IP, que serve para identificar de forma única cada equipamento dentro da rede. O endereço IP identifica:</div>
+    <div class="alternativas">
+      <label><input type="radio" name="q12" value="A" /> A) A senha de acesso à internet</label>
+      <label><input type="radio" name="q12" value="B" /> B) A localização física do roteador</label>
+      <label><input type="radio" name="q12" value="C" /> C) Um dispositivo único na rede</label>
+      <label><input type="radio" name="q12" value="D" /> D) A frequência de rádio</label>
+    </div>
+    <button class="btn-gabarito" data-q="12" disabled>Mostrar Gabarito</button>
+    <div class="gabarito" id="gab12">Gabarito: C</div>
+  </div>
+
+  <div class="questao" id="q13">
+    <div class="enunciado">13. Para estabelecer comunicação em redes Ethernet, que são comuns em ambientes industriais e comerciais, é necessário utilizar um tipo específico de cabo que oferece boa qualidade de transmissão e resistência a interferências eletromagnéticas. O cabo utilizado para comunicação em redes Ethernet é o:</div>
+    <div class="alternativas">
+      <label><input type="radio" name="q13" value="A" /> A) Cabo HDMI</label>
+      <label><input type="radio" name="q13" value="B" /> B) Cabo coaxial</label>
+      <label><input type="radio" name="q13" value="C" /> C) Cabo USB</label>
+      <label><input type="radio" name="q13" value="D" /> D) Cabo de par trançado (UTP)</label>
+    </div>
+    <button class="btn-gabarito" data-q="13" disabled>Mostrar Gabarito</button>
+    <div class="gabarito" id="gab13">Gabarito: D</div>
+  </div>
+
+  <div class="questao" id="q14">
+    <div class="enunciado">14. Em sistemas de automação industrial, a comunicação sem fio é uma alternativa prática para conectar dispositivos em locais de difícil acesso. O padrão mais utilizado para redes sem fio, garantindo alta compatibilidade e desempenho, é o conhecido por:</div>
+    <div class="alternativas">
+      <label><input type="radio" name="q14" value="A" /> A) 802.11</label>
+      <label><input type="radio" name="q14" value="B" /> B) USB 3.0</label>
+      <label><input type="radio" name="q14" value="C" /> C) Bluetooth 2.1</label>
+      <label><input type="radio" name="q14" value="D" /> D) IEEE 1349</label>
+    </div>
+    <button class="btn-gabarito" data-q="14" disabled>Mostrar Gabarito</button>
+    <div class="gabarito" id="gab14">Gabarito: A</div>
+  </div>
+
+  <div class="questao" id="q15">
+    <div class="enunciado">15. Para a troca eficiente de dados em sistemas de monitoramento remoto, como a medição de temperatura em fábricas ou residências inteligentes, utiliza-se um protocolo leve e confiável que trabalha com o modelo publish/subscribe. O protocolo MQTT é comumente usado em:</div>
+    <div class="alternativas">
+      <label><input type="radio" name="q15" value="A" /> A) Monitoramento de temperatura em tempo real</label>
+      <label><input type="radio" name="q15" value="B" /> B) Aplicações de jogos online</label>
+      <label><input type="radio" name="q15" value="C" /> C) Transmissão de vídeos em alta definição</label>
+      <label><input type="radio" name="q15" value="D" /> D) Serviços de impressão em rede</label>
+    </div>
+    <button class="btn-gabarito" data-q="15" disabled>Mostrar Gabarito</button>
+    <div class="gabarito" id="gab15">Gabarito: A</div>
+  </div>
+
+  <div class="questao" id="q16">
+    <div class="enunciado">16. Recentemente, uma empresa sofreu um ataque cibernético em que seus dados foram bloqueados por criminosos, que exigiram pagamento para liberar o acesso. Esse tipo de ataque é uma ameaça crescente no mundo digital e pode causar grandes prejuízos. O ataque descrito é conhecido como:</div>
+    <div class="alternativas">
+      <label><input type="radio" name="q16" value="A" /> A) Um tipo de firewall</label>
+      <label><input type="radio" name="q16" value="B" /> B) Um ataque que sequestra dados e exige resgate</label>
+      <label><input type="radio" name="q16" value="C" /> C) Uma atualização de segurança automática</label>
+      <label><input type="radio" name="q16" value="D" /> D) Um protocolo de rede</label>
+    </div>
+    <button class="btn-gabarito" data-q="16" disabled>Mostrar Gabarito</button>
+    <div class="gabarito" id="gab16">Gabarito: B</div>
+  </div>
+
+  <div class="questao" id="q17">
+    <div class="enunciado">17. Para proteger suas contas digitais contra invasões, é importante criar senhas difíceis de serem descobertas por terceiros. Uma senha forte é aquela que combina diferentes tipos de caracteres, dificultando tentativas de acesso não autorizado. Uma senha forte deve conter:</div>
+    <div class="alternativas">
+      <label><input type="radio" name="q17" value="A" /> A) Apenas letras minúsculas</label>
+      <label><input type="radio" name="q17" value="B" /> B) Números e letras repetidas</label>
+      <label><input type="radio" name="q17" value="C" /> C) Sequências como “123456”</label>
+      <label><input type="radio" name="q17" value="D" /> D) Letras maiúsculas, minúsculas, números e símbolos</label>
+    </div>
+    <button class="btn-gabarito" data-q="17" disabled>Mostrar Gabarito</button>
+    <div class="gabarito" id="gab17">Gabarito: D</div>
+  </div>
+
+  <div class="questao" id="q18">
+    <div class="enunciado">18. Muitos sistemas modernos adotam uma camada extra de segurança para proteger as contas dos usuários. Essa proteção exige que o usuário forneça duas formas de verificação para acessar o sistema, dificultando o acesso por pessoas não autorizadas. Essa medida de segurança é chamada de:</div>
+    <div class="alternativas">
+      <label><input type="radio" name="q18" value="A" /> A) Desbloquear múltiplas contas com um clique</label>
+      <label><input type="radio" name="q18" value="B" /> B) Oferecer suporte técnico ao usuário</label>
+      <label><input type="radio" name="q18" value="C" /> C) Proteger o sistema exigindo duas formas de verificação</label>
+      <label><input type="radio" name="q18" value="D" /> D) Substituir senhas longas por senhas curtas</label>
+    </div>
+    <button class="btn-gabarito" data-q="18" disabled>Mostrar Gabarito</button>
+    <div class="gabarito" id="gab18">Gabarito: C</div>
+  </div>
+
+  <div class="questao" id="q19">
+    <div class="enunciado">19. Em práticas recomendadas de cibersegurança, algumas atitudes ajudam a manter os sistemas protegidos contra ameaças. Entretanto, existe uma prática que não é aconselhada, pois pode comprometer a segurança dos dados. A prática que NÃO é recomendada é:</div>
+    <div class="alternativas">
+      <label><input type="radio" name="q19" value="A" /> A) Atualizar regularmente o software</label>
+      <label><input type="radio" name="q19" value="B" /> B) Compartilhar senhas com colegas de confiança</label>
+      <label><input type="radio" name="q19" value="C" /> C) Utilizar antivírus atualizado</label>
+      <label><input type="radio" name="q19" value="D" /> D) Fazer backups periódicos</label>
+    </div>
+    <button class="btn-gabarito" data-q="19" disabled>Mostrar Gabarito</button>
+    <div class="gabarito" id="gab19">Gabarito: B</div>
+  </div>
+
+  <div class="questao" id="q20">
+    <div class="enunciado">20. Ao acessar sites seguros, os navegadores indicam que a conexão está protegida por um certificado digital, que assegura a criptografia dos dados trocados entre o navegador e o servidor, protegendo informações sensíveis contra interceptações. O certificado digital SSL é usado para:</div>
+    <div class="alternativas">
+      <label><input type="radio" name="q20" value="A" /> A) Aumentar a velocidade da internet</label>
+      <label><input type="radio" name="q20" value="B" /> B) Garantir criptografia entre o navegador e o servidor</label>
+      <label><input type="radio" name="q20" value="C" /> C) Substituir senhas por QR Code</label>
+      <label><input type="radio" name="q20" value="D" /> D) Conectar sensores industriais sem fio</label>
+    </div>
+    <button class="btn-gabarito" data-q="20" disabled>Mostrar Gabarito</button>
+    <div class="gabarito" id="gab20">Gabarito: B</div>
+  </div>
+
+  <div class="questao" id="q21">
+    <div class="enunciado">21. A transformação digital nas fábricas tem revolucionado a forma como os processos industriais são realizados. A chamada "Indústria 4.0" envolve a integração de tecnologias digitais, automação e análise de dados para tornar a produção mais eficiente e flexível. O conceito de "Indústria 4.0" refere-se a:</div>
+    <div class="alternativas">
+      <label><input type="radio" name="q21" value="A" /> A) A digitalização e automação dos processos industriais</label>
+      <label><input type="radio" name="q21" value="B" /> B) A terceirização de processos produtivos</label>
+      <label><input type="radio" name="q21" value="C" /> C) A fabricação artesanal com máquinas simples</label>
+      <label><input type="radio" name="q21" value="D" /> D) A informatização de escritórios</label>
+    </div>
+    <button class="btn-gabarito" data-q="21" disabled>Mostrar Gabarito</button>
+    <div class="gabarito" id="gab21">Gabarito: A</div>
+  </div>
+
+  <div class="questao" id="q22">
+    <div class="enunciado">22. Para evitar paradas inesperadas e custos elevados com reparos, as indústrias utilizam técnicas que monitoram o funcionamento dos equipamentos em tempo real e analisam dados para prever quando uma falha pode ocorrer. Essa abordagem é conhecida como:</div>
+    <div class="alternativas">
+      <label><input type="radio" name="q22" value="A" /> A) Corrigir falhas após ocorrerem</label>
+      <label><input type="radio" name="q22" value="B" /> B) Trocar peças periodicamente</label>
+      <label><input type="radio" name="q22" value="C" /> C) Utilizar dados e sensores para prever falhas</label>
+      <label><input type="radio" name="q22" value="D" /> D) Ignorar problemas enquanto a máquina funciona</label>
+    </div>
+    <button class="btn-gabarito" data-q="22" disabled>Mostrar Gabarito</button>
+    <div class="gabarito" id="gab22">Gabarito: C</div>
+  </div>
+
+  <div class="questao" id="q23">
+    <div class="enunciado">23. Em ambientes industriais, sistemas que permitem o controle e a supervisão remota de processos, como o monitoramento de tanques, válvulas e máquinas, são fundamentais para a operação eficiente. Esses sistemas são conhecidos pela sigla SCADA, que significa:</div>
+    <div class="alternativas">
+      <label><input type="radio" name="q23" value="A" /> A) Controlar e supervisionar processos industriais</label>
+      <label><input type="radio" name="q23" value="B" /> B) Realizar cálculos matemáticos complexos</label>
+      <label><input type="radio" name="q23" value="C" /> C) Editar vídeos e gráficos</label>
+      <label><input type="radio" name="q23" value="D" /> D) Medir a velocidade da internet</label>
+    </div>
+    <button class="btn-gabarito" data-q="23" disabled>Mostrar Gabarito</button>
+    <div class="gabarito" id="gab23">Gabarito: A</div>
+  </div>
+
+  <div class="questao" id="q24">
+    <div class="enunciado">24. A robótica colaborativa tem ganhado espaço nas linhas de produção por permitir que robôs trabalhem em conjunto com operadores humanos, compartilhando espaços de trabalho de forma segura e aumentando a produtividade. A característica principal dos cobots é:</div>
+    <div class="alternativas">
+      <label><input type="radio" name="q24" value="A" /> A) Operar de forma isolada do ser humano</label>
+      <label><input type="radio" name="q24" value="B" /> B) Trabalhar lado a lado com humanos com segurança</label>
+      <label><input type="radio" name="q24" value="C" /> C) Executar apenas tarefas repetitivas</label>
+      <label><input type="radio" name="q24" value="D" /> D) Ser restrita à área da saúde</label>
+    </div>
+    <button class="btn-gabarito" data-q="24" disabled>Mostrar Gabarito</button>
+    <div class="gabarito" id="gab24">Gabarito: B</div>
+  </div>
+
+  <div class="questao" id="q25">
+    <div class="enunciado">25. A computação em nuvem tem trazido benefícios para a automação industrial ao possibilitar o armazenamento e a análise de grandes volumes de dados em servidores remotos, facilitando o acesso e a gestão das informações. Na automação industrial, a computação em nuvem permite:</div>
+    <div class="alternativas">
+      <label><input type="radio" name="q25" value="A" /> A) O armazenamento e análise de dados em servidores remotos</label>
+      <label><input type="radio" name="q25" value="B" /> B) A criação de ambientes climatizados automáticos</label>
+      <label><input type="radio" name="q25" value="C" /> C) A substituição total dos servidores locais</label>
+      <label><input type="radio" name="q25" value="D" /> D) A eliminação da necessidade de backup</label>
+    </div>
+    <button class="btn-gabarito" data-q="25" disabled>Mostrar Gabarito</button>
+    <div class="gabarito" id="gab25">Gabarito: A</div>
+  </div>
+
+  <div class="questao" id="q26">
+    <div class="enunciado">26. Ao desenvolver projetos de automação, é fundamental considerar princípios éticos que garantam respeito às pessoas, aos dados e ao ambiente. Isso inclui proteger informações sensíveis, assegurar a segurança dos usuários e promover a inclusão social. A ética em projetos de automação envolve:</div>
+    <div class="alternativas">
+      <label><input type="radio" name="q26" value="A" /> A) Maximizar os lucros a qualquer custo</label>
+      <label><input type="radio" name="q26" value="B" /> B) Reduzir a transparência dos processos</label>
+      <label><input type="radio" name="q26" value="C" /> C) Garantir segurança, privacidade e inclusão</label>
+      <label><input type="radio" name="q26" value="D" /> D) Utilizar apenas recursos gratuitos</label>
+    </div>
+    <button class="btn-gabarito" data-q="26" disabled>Mostrar Gabarito</button>
+    <div class="gabarito" id="gab26">Gabarito: C</div>
+  </div>
+
+  <div class="questao" id="q27">
+    <div class="enunciado">27. Para tornar a automação industrial mais sustentável, as empresas adotam práticas que visam a redução do consumo de recursos naturais e a minimização do impacto ambiental. Uma dessas práticas consiste em utilizar dispositivos que monitoram e controlam o uso de energia de forma eficiente. Uma prática sustentável em automação industrial é:</div>
+    <div class="alternativas">
+      <label><input type="radio" name="q27" value="A" /> A) Substituir máquinas por trabalhadores humanos</label>
+      <label><input type="radio" name="q27" value="B" /> B) Descartar resíduos industriais no esgoto</label>
+      <label><input type="radio" name="q27" value="C" /> C) Implementar sensores para otimizar consumo de energia</label>
+      <label><input type="radio" name="q27" value="D" /> D) Ignorar o reaproveitamento de materiais</label>
+    </div>
+    <button class="btn-gabarito" data-q="27" disabled>Mostrar Gabarito</button>
+    <div class="gabarito" id="gab27">Gabarito: C</div>
+  </div>
+
+  <div class="questao" id="q28">
+    <div class="enunciado">28. A introdução da automação nos processos produtivos traz diversas mudanças para a sociedade e o mercado de trabalho. Entre os impactos sociais estão a transformação dos postos de trabalho e a redução dos riscos operacionais para os funcionários. A automação pode gerar impactos sociais como:</div>
+    <div class="alternativas">
+      <label><input type="radio" name="q28" value="A" /> A) Aumento de salários imediatos</label>
+      <label><input type="radio" name="q28" value="B" /> B) Redução de riscos operacionais e transformação dos postos de trabalho</label>
+      <label><input type="radio" name="q28" value="C" /> C) Redução dos níveis de educação da força de trabalho</label>
+      <label><input type="radio" name="q28" value="D" /> D) Redução da eficiência produtiva</label>
+    </div>
+    <button class="btn-gabarito" data-q="28" disabled>Mostrar Gabarito</button>
+    <div class="gabarito" id="gab28">Gabarito: B</div>
+  </div>
+
+  <div class="questao" id="q29">
+    <div class="enunciado">29. No ambiente digital, a responsabilidade envolve agir com consciência, respeitando normas de segurança, privacidade e legislação vigente para proteger dados e manter a integridade dos sistemas. A responsabilidade digital inclui:</div>
+    <div class="alternativas">
+      <label><input type="radio" name="q29" value="A" /> A) Compartilhar senhas para agilizar processos</label>
+      <label><input type="radio" name="q29" value="B" /> B) Publicar dados confidenciais em fóruns internos</label>
+      <label><input type="radio" name="q29" value="C" /> C) Atuar com consciência, segurança e legalidade no ambiente digital</label>
+      <label><input type="radio" name="q29" value="D" /> D) Utilizar softwares piratas para economizar</label>
+    </div>
+    <button class="btn-gabarito" data-q="29" disabled>Mostrar Gabarito</button>
+    <div class="gabarito" id="gab29">Gabarito: C</div>
+  </div>
+
+  <div class="questao" id="q30">
+    <div class="enunciado">30. O descarte inadequado de componentes eletrônicos, como placas de circuito e baterias, pode liberar substâncias tóxicas que contaminam o solo e a água, causando sérios danos ao meio ambiente e à saúde das pessoas. O descarte incorreto de componentes eletrônicos pode:</div>
+    <div class="alternativas">
+      <label><input type="radio" name="q30" value="A" /> A) Melhorar a eficiência energética da empresa</label>
+      <label><input type="radio" name="q30" value="B" /> B) Gerar receita extra</label>
+      <label><input type="radio" name="q30" value="C" /> C) Causar sérios danos ao meio ambiente</label>
+      <label><input type="radio" name="q30" value="D" /> D) Ser reutilizado como lixo orgânico</label>
+    </div>
+    <button class="btn-gabarito" data-q="30" disabled>Mostrar Gabarito</button>
+    <div class="gabarito" id="gab30">Gabarito: C</div>
+  </div>
+
+  <div class="questao" id="q31">
+    <div class="enunciado">31. Em uma planta industrial moderna, sensores conectados via IoT monitoram constantemente a temperatura dos equipamentos. Isso permite que os operadores recebam informações em tempo real e ajustem os processos de forma precisa, evitando falhas e desperdícios. O principal benefício desse monitoramento é:</div>
+    <div class="alternativas">
+      <label><input type="radio" name="q31" value="A" /> A) Redução da necessidade de sensores físicos</label>
+      <label><input type="radio" name="q31" value="B" /> B) Aumento da temperatura local</label>
+      <label><input type="radio" name="q31" value="C" /> C) Tomada de decisões em tempo real com dados precisos</label>
+      <label><input type="radio" name="q31" value="D" /> D) Substituição de toda a automação</label>
+    </div>
+    <button class="btn-gabarito" data-q="31" disabled>Mostrar Gabarito</button>
+    <div class="gabarito" id="gab31">Gabarito: C</div>
+  </div>
+
+  <div class="questao" id="q32">
+    <div class="enunciado">32. Para otimizar a manutenção e operação de máquinas, algumas indústrias utilizam gêmeos digitais, que são réplicas virtuais dos sistemas físicos. Esses modelos digitais permitem simular diferentes cenários e monitorar o desempenho sem interferir no equipamento real. O uso de gêmeos digitais permite:</div>
+    <div class="alternativas">
+      <label><input type="radio" name="q32" value="A" /> A) Reproduzir manualmente sistemas físicos</label>
+      <label><input type="radio" name="q32" value="B" /> B) Simular e monitorar sistemas reais digitalmente</label>
+      <label><input type="radio" name="q32" value="C" /> C) Utilizar apenas equipamentos antigos</label>
+      <label><input type="radio" name="q32" value="D" /> D) Trabalhar sem conexão com a internet</label>
+    </div>
+    <button class="btn-gabarito" data-q="32" disabled>Mostrar Gabarito</button>
+    <div class="gabarito" id="gab32">Gabarito: B</div>
+  </div>
+
+  <div class="questao" id="q33">
+    <div class="enunciado">33. Grandes volumes de dados coletados em sistemas automatizados são analisados para identificar padrões e prever problemas antes que ocorram. Essa análise avançada, conhecida como Big Data, auxilia na melhoria da eficiência operacional e na redução de falhas. A análise de Big Data em sistemas automatizados permite:</div>
+    <div class="alternativas">
+      <label><input type="radio" name="q33" value="A" /> A) Reduzir a coleta de dados</label>
+      <label><input type="radio" name="q33" value="B" /> B) Ignorar padrões de produção</label>
+      <label><input type="radio" name="q33" value="C" /> C) Detectar falhas e prever manutenções</label>
+      <label><input type="radio" name="q33" value="D" /> D) Aumentar o retrabalho manual</label>
+    </div>
+    <button class="btn-gabarito" data-q="33" disabled>Mostrar Gabarito</button>
+    <div class="gabarito" id="gab33">Gabarito: C</div>
+  </div>
+
+  <div class="questao" id="q34">
+    <div class="enunciado">34. Nas indústrias, o operador precisa interagir com máquinas e sistemas para controlar processos e monitorar condições de trabalho. Essa interação é facilitada por um equipamento que apresenta informações em telas e permite comandos simples. A principal função de um HMI (Interface Homem-Máquina) é:</div>
+    <div class="alternativas">
+      <label><input type="radio" name="q34" value="A" /> A) Atuar como servidor de internet</label>
+      <label><input type="radio" name="q34" value="B" /> B) Integrar banco de dados e redes sociais</label>
+      <label><input type="radio" name="q34" value="C" /> C) Fornecer interface entre operador e máquina</label>
+      <label><input type="radio" name="q34" value="D" /> D) Realizar backup automático dos sistemas</label>
+    </div>
+    <button class="btn-gabarito" data-q="34" disabled>Mostrar Gabarito</button>
+    <div class="gabarito" id="gab34">Gabarito: C</div>
+  </div>
+
+  <div class="questao" id="q35">
+    <div class="enunciado">35. A inteligência artificial tem sido cada vez mais aplicada na automação industrial para melhorar a eficiência e a qualidade dos processos. Ao analisar dados históricos e em tempo real, ela ajuda a otimizar a produção e a tomada de decisões. O uso de inteligência artificial na automação industrial está relacionado a:</div>
+    <div class="alternativas">
+      <label><input type="radio" name="q35" value="A" /> A) Eliminar supervisão humana</label>
+      <label><input type="radio" name="q35" value="B" /> B) Otimizar processos com base em dados históricos</label>
+      <label><input type="radio" name="q35" value="C" /> C) Criar sistemas puramente reativos</label>
+      <label><input type="radio" name="q35" value="D" /> D) Substituir totalmente o CLP</label>
+    </div>
+    <button class="btn-gabarito" data-q="35" disabled>Mostrar Gabarito</button>
+    <div class="gabarito" id="gab35">Gabarito: B</div>
+  </div>
+
+  <div class="questao" id="q36">
+    <div class="enunciado">36. Com o aumento do uso de dados pessoais por empresas e organizações, a legislação brasileira criou regras para proteger a privacidade dos cidadãos, definindo como esses dados devem ser tratados e armazenados. A LGPD (Lei Geral de Proteção de Dados) se aplica a:</div>
+    <div class="alternativas">
+      <label><input type="radio" name="q36" value="A" /> A) Apenas empresas de tecnologia</label>
+      <label><input type="radio" name="q36" value="B" /> B) Somente dados de redes sociais</label>
+      <label><input type="radio" name="q36" value="C" /> C) Todos os dados pessoais tratados por empresas e organizações</label>
+      <label><input type="radio" name="q36" value="D" /> D) Dados de empresas públicas</label>
+    </div>
+    <button class="btn-gabarito" data-q="36" disabled>Mostrar Gabarito</button>
+    <div class="gabarito" id="gab36">Gabarito: C</div>
+  </div>
+
+  <div class="questao" id="q37">
+    <div class="enunciado">37. Para garantir a segurança dos trabalhadores e o funcionamento correto das máquinas industriais, existem normas específicas que estabelecem requisitos de proteção, sinalização e manutenção. A norma que regulamenta segurança em máquinas industriais no Brasil é a:</div>
+    <div class="alternativas">
+      <label><input type="radio" name="q37" value="A" /> A) NR 12</label>
+      <label><input type="radio" name="q37" value="B" /> B) NR 35</label>
+      <label><input type="radio" name="q37" value="C" /> C) ISO 9001</label>
+      <label><input type="radio" name="q37" value="D" /> D) ISO 14000</label>
+    </div>
+    <button class="btn-gabarito" data-q="37" disabled>Mostrar Gabarito</button>
+    <div class="gabarito" id="gab37">Gabarito: A</div>
+  </div>
+
+  <div class="questao" id="q38">
+    <div class="enunciado">38. A certificação ISO 27001 é uma referência internacional para empresas que buscam implementar e manter um sistema eficaz de gestão da segurança da informação, protegendo dados e garantindo a confidencialidade, integridade e disponibilidade. A ISO 27001 trata de:</div>
+    <div class="alternativas">
+      <label><input type="radio" name="q38" value="A" /> A) Gestão de qualidade</label>
+      <label><input type="radio" name="q38" value="B" /> B) Sustentabilidade ambiental</label>
+      <label><input type="radio" name="q38" value="C" /> C) Gestão da segurança da informação</label>
+      <label><input type="radio" name="q38" value="D" /> D) Gestão de resíduos sólidos</label>
+    </div>
+    <button class="btn-gabarito" data-q="38" disabled>Mostrar Gabarito</button>
+    <div class="gabarito" id="gab38">Gabarito: C</div>
+  </div>
+
+  <div class="questao" id="q39">
+    <div class="enunciado">39. Durante a implementação de um sistema de automação industrial, um engenheiro percebe que alguns dispositivos estão sofrendo ataques que exploram falhas conhecidas de firmware. Para mitigar esse risco, a medida mais apropriada seria:</div>
+    <div class="alternativas">
+      <label><input type="radio" name="q39" value="A" /> A) Desabilitar todos os dispositivos conectados à rede</label>
+      <label><input type="radio" name="q39" value="B" /> B) Atualizar o firmware para a versão mais recente</label>
+      <label><input type="radio" name="q39" value="C" /> C) Substituir os dispositivos por modelos mais caros</label>
+      <label><input type="radio" name="q39" value="D" /> D) Instalar antivírus nos dispositivos</label>
+    </div>
+    <button class="btn-gabarito" data-q="39" disabled>Mostrar Gabarito</button>
+    <div class="gabarito" id="gab39">Gabarito: B</div>
+  </div>
+
+  <div class="questao" id="q40">
+    <div class="enunciado">40. Em uma rede de controle de processos industriais, foi identificado que alguns controladores lógicos programáveis (CLPs) estão expostos à internet sem autenticação adequada. A ação imediata para aumentar a segurança deve ser:</div>
+    <div class="alternativas">
+      <label><input type="radio" name="q40" value="A" /> A) Desconectar os CLPs da internet ou implementar firewall e autenticação</label>
+      <label><input type="radio" name="q40" value="B" /> B) Substituir todos os CLPs por novos modelos</label>
+      <label><input type="radio" name="q40" value="C" /> C) Aumentar a velocidade da internet</label>
+      <label><input type="radio" name="q40" value="D" /> D) Instalar câmeras para monitorar os CLPs</label>
+    </div>
+    <button class="btn-gabarito" data-q="40" disabled>Mostrar Gabarito</button>
+    <div class="gabarito" id="gab40">Gabarito: A</div>
+  </div>
+
+  <div id="botoes-finais">
+    <button id="btn-checar">Verificar Resultado</button>
+    <button id="btn-reiniciar">Reiniciar Questionário</button>
+  </div>
+
+  <div id="resultado" style="display:none;"></div>
 </div>
 
 <script>
+  const indiceBtns = document.querySelectorAll('#indice button');
+  const questoes = document.querySelectorAll('.questao');
 
-const SHEET_ID = "1NBBtdsqbR4FzNyNsCuG3K3HdSRk6QzT-QR2mnjHEXJ0";
+  indiceBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const qNum = btn.getAttribute('data-q');
+      document.getElementById('q' + qNum).scrollIntoView({behavior: 'smooth'});
+    });
+  });
 
-fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`)
-.then(res => res.text())
-.then(data => {
+  questoes.forEach(questao => {
+    const qNum = questao.id.replace('q','');
+    const radios = questao.querySelectorAll('input[type="radio"]');
+    const btnGabarito = questao.querySelector('.btn-gabarito');
+    const indiceBtn = document.querySelector(`#indice button[data-q="${qNum}"]`);
+    radios.forEach(radio => {
+      radio.addEventListener('change', () => {
+        btnGabarito.disabled = false;
+        indiceBtn.classList.add('green');
+        if(btnGabarito.dataset.mostrado === "true"){
+          radios.forEach(r => r.disabled = true);
+        }
+      });
+    });
+  });
 
-const json = JSON.parse(data.substr(47).slice(0,-2));
-const rows = json.table.rows;
+  const botoesGabarito = document.querySelectorAll('.btn-gabarito');
+  botoesGabarito.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const qNum = btn.getAttribute('data-q');
+      const questao = document.getElementById('q'+qNum);
+      const radios = questao.querySelectorAll('input[type="radio"]');
+      const gabarito = document.getElementById('gab'+qNum);
+      const marcado = [...radios].some(r => r.checked);
+      if(!marcado){
+        alert('Selecione uma alternativa antes de mostrar o gabarito!');
+        return;
+      }
+      gabarito.style.display = 'block';
+      btn.disabled = true;
+      btn.dataset.mostrado = "true";
+      radios.forEach(r => r.disabled = true);
+    });
+  });
 
-let dados = [];
+  document.getElementById('btn-checar').addEventListener('click', () => {
+    let total = questoes.length;
+    let naoRespondidas = 0;
+    questoes.forEach(questao => {
+      const radios = questao.querySelectorAll('input[type="radio"]');
+      const marcado = [...radios].some(r => r.checked);
+      if(!marcado){
+        naoRespondidas++;
+      }
+    });
+    if(naoRespondidas > 0){
+      alert(`Por favor, responda todas as questões antes de verificar o resultado. Faltam ${naoRespondidas} questão(ões).`);
+      return;
+    }
+    questoes.forEach(questao => {
+      const qNum = questao.id.replace('q','');
+      const radios = questao.querySelectorAll('input[type="radio"]');
+      const btnGabarito = questao.querySelector('.btn-gabarito');
+      const gabarito = questao.querySelector('.gabarito');
+      gabarito.style.display = 'block';
+      radios.forEach(r => r.disabled = true);
+      btnGabarito.disabled = true;
+      btnGabarito.dataset.mostrado = "true";
+      const indiceBtn = document.querySelector(`#indice button[data-q="${qNum}"]`);
+      indiceBtn.classList.add('green');
+    });
+    let acertou = 0;
+    questoes.forEach(questao => {
+      const qNum = questao.id.replace('q','');
+      const radios = questao.querySelectorAll('input[type="radio"]');
+      const gabaritoText = document.getElementById('gab'+qNum).textContent.trim();
+      const gabaritoLetra = gabaritoText.split(':')[1].trim();
+      const marcado = [...radios].find(r => r.checked);
+      if(marcado.value === gabaritoLetra){
+        acertou++;
+      }
+    });
+    let erros = total - acertou;
+    let pctAcerto = ((acertou/total)*100).toFixed(1);
+    let pctErro = ((erros/total)*100).toFixed(1);
+    const resultadoDiv = document.getElementById('resultado');
+    resultadoDiv.style.display = 'block';
+    resultadoDiv.innerHTML = `
+      Total de questões: ${total}<br>
+      Respondidas corretamente: ${acertou}<br>
+      Respondidas incorretamente: ${erros}<br>
+      Percentual de acertos: ${pctAcerto}%<br>
+      Percentual de erros: ${pctErro}%
+    `;
+  });
 
-rows.forEach(r=>{
-dados.push({
-turma:r.c[0].v,
-aluno:r.c[1].v,
-faltas:r.c[2].v
-});
-});
+  document.getElementById('btn-reiniciar').addEventListener('click', () => {
+    questoes.forEach(questao => {
+      const radios = questao.querySelectorAll('input[type="radio"]');
+      const btnGabarito = questao.querySelector('.btn-gabarito');
+      const gabarito = questao.querySelector('.gabarito');
+      radios.forEach(r => {
+        r.checked = false;
+        r.disabled = false;
+      });
+      btnGabarito.disabled = true;
+      btnGabarito.dataset.mostrado = "false";
+      gabarito.style.display = 'none';
+      const qNum = questao.id.replace('q','');
+      const indiceBtn = document.querySelector(`#indice button[data-q="${qNum}"]`);
+      indiceBtn.classList.remove('green');
+    });
+    document.getElementById('resultado').style.display = 'none';
+    document.getElementById('resultado').innerHTML = '';
+  });
+</script>
+<script>
+/* ===== Persistência do quiz (respostas e gabaritos) via localStorage ===== */
+(function () {
+  const KEY = 'quizState_v1'; // mude se tiver mais de um quiz na mesma página
 
-const turmas = [...new Set(dados.map(d=>d.turma))];
+  function getState() {
+    try { return JSON.parse(localStorage.getItem(KEY)) || {answers:{}, shown:{}, allRevealed:false, resultadoHTML:''}; }
+    catch(e) { return {answers:{}, shown:{}, allRevealed:false, resultadoHTML:''}; }
+  }
+  function saveState(s) { localStorage.setItem(KEY, JSON.stringify(s)); }
 
-const select = document.getElementById("turma");
+  // 1) Ao carregar: restaura seleções, gabaritos e resultado
+  const state = getState();
+  const questoes = document.querySelectorAll('.questao');
+  questoes.forEach(questao => {
+    const qNum = questao.id.replace('q','');
+    const radios = questao.querySelectorAll('input[type="radio"]');
+    const btnGabarito = questao.querySelector('.btn-gabarito');
+    const gabarito = questao.querySelector('.gabarito');
+    const indiceBtn = document.querySelector(`#indice button[data-q="${qNum}"]`);
 
-turmas.forEach(t=>{
-let opt=document.createElement("option");
-opt.value=t;
-opt.textContent=t;
-select.appendChild(opt);
-});
+    // Restaura resposta marcada
+    const ans = state.answers[qNum];
+    if (ans) {
+      const r = questao.querySelector(`input[type="radio"][value="${ans}"]`);
+      if (r) {
+        r.checked = true;
+        if (btnGabarito) btnGabarito.disabled = false;
+        if (indiceBtn) indiceBtn.classList.add('green');
+      }
+    }
 
-select.addEventListener("change",()=>mostrar(select.value));
+    // Restaura gabarito mostrado
+    if (state.shown[qNum]) {
+      gabarito.style.display = 'block';
+      if (btnGabarito) { btnGabarito.disabled = true; btnGabarito.dataset.mostrado = "true"; }
+      radios.forEach(r => r.disabled = true);
+    }
+  });
 
-mostrar(turmas[0]);
+  // Restaura resultado geral se já tinha sido checado
+  if (state.allRevealed && state.resultadoHTML) {
+    const resultadoDiv = document.getElementById('resultado');
+    if (resultadoDiv) {
+      resultadoDiv.style.display = 'block';
+      resultadoDiv.innerHTML = state.resultadoHTML;
+    }
+  }
 
-function mostrar(turma){
+  // 2) Salva toda vez que marcar uma alternativa
+  document.querySelectorAll('.questao input[type="radio"]').forEach(r => {
+    r.addEventListener('change', (e) => {
+      const qDiv = e.target.closest('.questao');
+      if (!qDiv) return;
+      const qNum = qDiv.id.replace('q','');
+      const st = getState();
+      st.answers[qNum] = e.target.value;
+      saveState(st);
+    });
+  });
 
-const alunos = dados.filter(a=>a.turma===turma);
+  // 3) Salva quando clicar em "Mostrar Gabarito" da questão
+  document.querySelectorAll('.btn-gabarito').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const qNum = e.currentTarget.getAttribute('data-q');
+      const st = getState();
+      st.shown[qNum] = true;
+      saveState(st);
+    });
+  });
 
-let freq=0;
-let risco=0;
-let possivel=0;
-let desist=0;
+  // 4) Salva quando clicar em "Verificar Resultado" (revela todos)
+  const btnChecar = document.getElementById('btn-checar');
+  if (btnChecar) {
+    btnChecar.addEventListener('click', () => {
+      const st = getState();
+      st.allRevealed = true;
+      // Marca todos como mostrados
+      document.querySelectorAll('.questao').forEach(q => {
+        const qNum = q.id.replace('q','');
+        st.shown[qNum] = true;
+      });
+      // Aguarda o JS original preencher o #resultado e salva o HTML dele
+      setTimeout(() => {
+        const resultadoDiv = document.getElementById('resultado');
+        if (resultadoDiv) st.resultadoHTML = resultadoDiv.innerHTML || '';
+        saveState(st);
+      }, 0);
+    });
+  }
 
-alunos.forEach(a=>{
-
-if(a.faltas<=14) freq++;
-else if(a.faltas<=30) risco++;
-else if(a.faltas<=41) possivel++;
-else desist++;
-
-});
-
-grafico(freq,risco,possivel,desist);
-
-}
-
-});
-
-function grafico(freq,risco,possivel,desist){
-
-new Chart(document.getElementById("grafico"),{
-
-type:"pie",
-
-data:{
-labels:[
-"Frequentando",
-"Risco",
-"Possível desistência",
-"Desistente"
-],
-
-datasets:[{
-data:[freq,risco,possivel,desist]
-}]
-}
-
-});
-
-}
-
+  // 5) Limpa tudo só quando clicar em "Reiniciar Questionário"
+  const btnReiniciar = document.getElementById('btn-reiniciar');
+  if (btnReiniciar) {
+    btnReiniciar.addEventListener('click', () => {
+      localStorage.removeItem(KEY);
+    });
+  }
+})();
 </script>
 
 </body>
 </html>
-
