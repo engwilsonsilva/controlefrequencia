@@ -26,6 +26,7 @@ border-radius:8px;
 .chart-box{
 max-width:420px;
 margin:auto;
+height:300px;
 }
 
 .cards{
@@ -62,20 +63,9 @@ box-shadow:0 2px 4px rgba(0,0,0,0.08);
 font-size:14px;
 }
 
-.painel-verde{
-background:#e6f6ea;
-border-left:6px solid #2e7d32;
-}
-
-.painel-amarelo{
-background:#fff8e1;
-border-left:6px solid #f9a825;
-}
-
-.painel-vermelho{
-background:#fdecea;
-border-left:6px solid #c62828;
-}
+.painel-verde{background:#e6f6ea;border-left:6px solid #2e7d32;}
+.painel-amarelo{background:#fff8e1;border-left:6px solid #f9a825;}
+.painel-vermelho{background:#fdecea;border-left:6px solid #c62828;}
 
 table{
 width:100%;
@@ -92,6 +82,24 @@ background:#ffe0e0;
 padding:10px;
 margin-bottom:10px;
 border-radius:6px;
+}
+
+.modal{
+display:none;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.5);
+}
+
+.modal-box{
+background:white;
+padding:20px;
+width:350px;
+margin:10% auto;
+border-radius:8px;
 }
 
 </style>
@@ -160,6 +168,7 @@ Desistentes
 <th>Aluno</th>
 <th>Faltas</th>
 <th>Situação</th>
+<th>Ação</th>
 </tr>
 </thead>
 
@@ -173,13 +182,48 @@ Desistentes
 
 </div>
 
+<!-- MODAL -->
+
+<div id="modalAcao" class="modal">
+
+<div class="modal-box">
+
+<h3>Registrar ação</h3>
+
+<p id="modalAluno"></p>
+
+<select id="modalAcaoTipo">
+
+<option>Contato realizado</option>
+<option>Não localizado</option>
+<option>Retornou ao curso</option>
+<option>Transferido</option>
+
+</select>
+
+<br><br>
+
+<button onclick="salvarAcao()">Salvar</button>
+<button onclick="fecharModal()">Cancelar</button>
+
+</div>
+
+</div>
+
 <script>
 
 const SHEET_ID="1NBBtdsqbR4FzNyNsCuG3K3HdSRk6QzT-QR2mnjHEXJ0";
 
+https://script.google.com/macros/s/AKfycbw8OeSxyL3hvIeibgwhu6v-ejJx3MDGzVdg9ZjQZP6vKqF4x6ne33dpD3vbbexQ5IeC/exec
+
+const SCRIPT_URL="COLE_AQUI_SEU_LINK_EXEC";
+
 let dados=[];
 let filtrados=[];
 let chart;
+
+let alunoAtual="";
+let faltasAtual=0;
 
 function classificar(f){
 
@@ -255,12 +299,8 @@ else desist++;
 
 let classe="painel-verde";
 
-if(desist>=8){
-classe="painel-vermelho";
-}
-else if(desist>=4){
-classe="painel-amarelo";
-}
+if(desist>=8)classe="painel-vermelho";
+else if(desist>=4)classe="painel-amarelo";
 
 let div=document.createElement("div");
 
@@ -275,16 +315,6 @@ Desistentes: ${desist}
 `;
 
 document.getElementById("painelTurmas").appendChild(div);
-
-if(desist>5){
-
-document.getElementById("alertas").innerHTML+=`
-<div class="alerta">
-⚠ ${turma} possui ${desist} alunos desistentes
-</div>
-`;
-
-}
 
 });
 
@@ -350,6 +380,7 @@ tr.innerHTML=`
 <td>${a.aluno}</td>
 <td>${a.faltas}</td>
 <td>${c}</td>
+<td><button onclick="abrirModal('${a.aluno}',${a.faltas})">Registrar ação</button></td>
 `;
 
 tabela.appendChild(tr);
@@ -374,11 +405,6 @@ labels:["Frequentando","Risco","Possível desistência","Desistente"],
 datasets:[{
 data:[freq,risco,poss,desist]
 }]
-},
-
-options:{
-responsive:true,
-maintainAspectRatio:false
 }
 
 });
@@ -417,6 +443,48 @@ filtrados=dados.filter(a=>a.aluno.toLowerCase().includes(termo));
 mostrar();
 
 });
+
+function abrirModal(aluno,faltas){
+
+alunoAtual=aluno;
+faltasAtual=faltas;
+
+document.getElementById("modalAluno").innerText=aluno;
+
+document.getElementById("modalAcao").style.display="block";
+
+}
+
+function fecharModal(){
+
+document.getElementById("modalAcao").style.display="none";
+
+}
+
+function salvarAcao(){
+
+let acao=document.getElementById("modalAcaoTipo").value;
+
+let turma=document.getElementById("turma").value;
+
+let data=new Date().toISOString().split("T")[0];
+
+fetch(SCRIPT_URL,{
+method:"POST",
+body:JSON.stringify({
+turma:turma,
+aluno:alunoAtual,
+faltas:faltasAtual,
+data:data,
+acao:acao
+})
+});
+
+alert("Ação registrada no histórico");
+
+fecharModal();
+
+}
 
 carregarTurmas();
 
