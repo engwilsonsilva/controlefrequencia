@@ -141,27 +141,6 @@ Desistentes
 <div class="chart-box">
 <canvas id="grafico"></canvas>
 </div>
-  
-function graficoAcoes(){
-let contagem={};
-historico.forEach(h=>{
-if(!contagem[h.acao]) contagem[h.acao]=0;
-contagem[h.acao]++;
-});
-let labels=Object.keys(contagem);
-let valores=Object.values(contagem);
-new Chart(document.getElementById("graficoAcoes"),{
-type:"bar",
-data:{
-labels:labels,
-datasets:[{
-label:"Ações realizadas",
-data:valores
-}]
-}
-});
-}
-
 <h3>Buscar aluno</h3>
 
 <input id="busca" placeholder="Digite o nome do aluno">
@@ -204,6 +183,26 @@ let dados=[];
 let filtrados=[];
 let chart;
 
+let chartAcoes; 
+function graficoAcoes(){
+let contagem={};
+historico.forEach(h=>{
+if(!contagem[h.acao]) contagem[h.acao]=0;
+contagem[h.acao]++;
+});
+let labels=Object.keys(contagem);
+let valores=Object.values(contagem);
+new Chart(document.getElementById("graficoAcoes"),{
+type:"bar",
+data:{
+labels:labels,
+datasets:[{
+label:"Ações realizadas",
+data:valores
+}]
+}
+});
+}
 function classificar(f){
 
 if(f<=14) return "Frequentando";
@@ -297,7 +296,6 @@ document.getElementById("alertas").innerHTML+=`
 
 }
 
-  
 function carregarTurmas(){
 
 fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=Turmas`)
@@ -574,6 +572,7 @@ carregarTurmas();
 
 </body>
 </html>
+
 
 
 
