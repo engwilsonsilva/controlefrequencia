@@ -170,12 +170,15 @@ Desistentes
 
 <br>
 
-<button onclick="window.print()">Imprimir relatório</button>
+<button onclick="window.print()">Imprimir Relatório</button>
 
 </div>
 
 <script>
+  
+const HIST_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=Historico`;
 
+let historico=[];
 const SHEET_ID="1NBBtdsqbR4FzNyNsCuG3K3HdSRk6QzT-QR2mnjHEXJ0";
 
 let dados=[];
@@ -186,8 +189,44 @@ function classificar(f){
 
 if(f<=14) return "Frequentando";
 if(f<=30) return "Risco";
-if(f<=41) return "Possível desistência";
+if(f<=41) return "Possível Desistência";
 return "Desistente";
+
+}
+  function carregarHistorico(){
+
+fetch(HIST_URL)
+.then(res=>res.text())
+.then(data=>{
+
+const json=JSON.parse(data.substring(47).slice(0,-2));
+const rows=json.table.rows;
+
+historico=[];
+
+rows.forEach(r=>{
+
+let turma=r.c[0]?.v;
+let aluno=r.c[1]?.v;
+let faltas=r.c[2]?.v;
+let dataAcao=r.c[3]?.v;
+let acao=r.c[4]?.v;
+
+if(!aluno) return;
+
+historico.push({
+turma,
+aluno,
+faltas,
+data:dataAcao,
+acao
+});
+
+});
+
+verificarAlertas();
+
+});
 
 }
 
@@ -351,9 +390,14 @@ tr.innerHTML=`
 <td>${a.aluno}</td>
 <td>${a.faltas}</td>
 <td>${c}</td>
+<td>${ultimaAcao(a.aluno)}</td>
 <td>
 <button onclick="registrarAcao('${a.aluno}',${a.faltas})">
 Registrar ação
+</button>
+
+<button onclick="verHistorico('${a.aluno}')">Histórico</button>
+Histórico
 </button>
 </td>
 `;
@@ -376,7 +420,7 @@ chart=new Chart(document.getElementById("grafico"),{
 type:"pie",
 
 data:{
-labels:["Frequentando","Risco","Possível desistência","Desistente"],
+labels:["Frequentando","Risco","Possível Desistência","Desistente"],
 datasets:[{
 data:[freq,risco,poss,desist]
 }]
@@ -391,6 +435,17 @@ maintainAspectRatio:false
 
 }
 
+function ultimaAcao(aluno){
+
+let registros=historico
+.filter(h=>h.aluno===aluno)
+.sort((a,b)=>new Date(b.data)-new Date(a.data));
+
+if(registros.length===0) return "-";
+
+return registros[0].acao;
+
+}
 function ranking(){
 
 let top=[...dados]
@@ -448,13 +503,14 @@ acao:acao
 })
 });
 
-alert("Ação registrada no histórico");
+alert("Ação registrada no Histórico");
 
 }
 </script>
 
 </body>
 </html>
+
 
 
 
