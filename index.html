@@ -396,7 +396,7 @@ tr.innerHTML=`
 Registrar ação
 </button>
 
-<button onclick="verHistorico('${a.aluno}')">Histórico</button>
+<button onclick="verHistorico('${a.aluno}')">
 Histórico
 </button>
 </td>
@@ -420,7 +420,7 @@ chart=new Chart(document.getElementById("grafico"),{
 type:"pie",
 
 data:{
-labels:["Frequentando","Risco","Possível Desistência","Desistente"],
+labels:["Frequentando","Risco","Possível desistência","Desistente"],
 datasets:[{
 data:[freq,risco,poss,desist]
 }]
@@ -510,6 +510,7 @@ alert("Ação registrada no Histórico");
 
 </body>
 </html>
+
 
 
 
