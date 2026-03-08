@@ -390,14 +390,9 @@ tr.innerHTML=`
 <td>${a.aluno}</td>
 <td>${a.faltas}</td>
 <td>${c}</td>
-<td>${ultimaAcao(a.aluno)}</td>
 <td>
 <button onclick="registrarAcao('${a.aluno}',${a.faltas})">
 Registrar ação
-</button>
-
-<button onclick="verHistorico('${a.aluno}')">
-Histórico
 </button>
 </td>
 `;
@@ -510,6 +505,7 @@ alert("Ação registrada no Histórico");
 
 </body>
 </html>
+
 
 
 
