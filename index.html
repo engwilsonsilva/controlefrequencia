@@ -143,24 +143,15 @@ Desistentes
 </div>
   
 function graficoAcoes(){
-
 let contagem={};
-
 historico.forEach(h=>{
-
 if(!contagem[h.acao]) contagem[h.acao]=0;
-
 contagem[h.acao]++;
-
 });
-
 let labels=Object.keys(contagem);
 let valores=Object.values(contagem);
-
 new Chart(document.getElementById("graficoAcoes"),{
-
 type:"bar",
-
 data:{
 labels:labels,
 datasets:[{
@@ -583,6 +574,7 @@ carregarTurmas();
 
 </body>
 </html>
+
 
 
 
