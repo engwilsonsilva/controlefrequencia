@@ -162,7 +162,7 @@ async function processarTurma(turma) {
 
     // Faz o download de todas as abas ao mesmo tempo
     const promessas = materias.map(mat => {
-        return fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(mat.aba)}`)
+        return fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(mat.aba)}&t=${Date.now()}`)
             .then(res => res.text())
             .then(texto => {
                 const json = JSON.parse(texto.substring(47).slice(0, -2));
@@ -320,4 +320,5 @@ async function registrarAcao(aluno) {
 
 </body>
 </html>
+
 
