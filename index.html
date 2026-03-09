@@ -194,7 +194,8 @@ contagem[h.acao]++;
 });
 let labels=Object.keys(contagem);
 let valores=Object.values(contagem);
-new Chart(document.getElementById("graficoAcoes"),{
+if(chartAcoes) chartAcoes.destroy();
+chartAcoes = new Chart(document.getElementById("graficoAcoes"),{
 type:"bar",
 data:{
 labels:labels,
@@ -202,6 +203,10 @@ datasets:[{
 label:"Ações realizadas",
 data:valores
 }]
+},
+options:{
+responsive:true,
+maintainAspectRatio:false
 }
 });
 }
@@ -251,17 +256,6 @@ graficoAcoes();
 
 }
   
-function ultimaAcao(aluno){
-
-let registros=historico
-.filter(h=>h.aluno===aluno)
-.sort((a,b)=>new Date(b.data)-new Date(a.data));
-
-if(registros.length===0) return "-";
-
-return registros[0].acao;
-
-}
  function verHistorico(aluno){
 
 let registros=historico
@@ -299,7 +293,7 @@ document.getElementById("alertas").innerHTML+=`
 }
 
 function carregarTurmas(){
-
+document.getElementById("painelTurmas").innerHTML="";
 fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=Turmas`)
 .then(res=>res.text())
 .then(data=>{
@@ -425,6 +419,9 @@ faltas:faltas
 });
 
 filtrados=[...dados];
+  if(historico.length>0){
+mostrar();
+}
 
 mostrar();
 
@@ -576,5 +573,6 @@ carregarTurmas();
 
 </body>
 </html>
+
 
 
