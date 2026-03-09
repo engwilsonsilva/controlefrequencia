@@ -138,13 +138,13 @@ function carregarConfiguracao() {
                 }
             });
 
-            // Preenche o Menu
-            Object.keys(estruturaEscola).forEach(turma => {
-                let opt = document.createElement("option");
-                opt.value = turma;
-                opt.textContent = turma;
-                select.appendChild(opt);
-            });
+            // Preenche o Menu (Ordenado)
+Object.keys(estruturaEscola).sort().forEach(turma => {
+    let opt = document.createElement("option");
+    opt.value = turma;
+    opt.textContent = turma;
+    select.appendChild(opt);
+});
 
             select.addEventListener("change", () => processarTurma(select.value));
         });
@@ -320,3 +320,4 @@ async function registrarAcao(aluno) {
 
 </body>
 </html>
+
