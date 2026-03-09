@@ -165,17 +165,25 @@ function mostrar() {
         let sit = classificar(a.faltas);
         contagem[sit]++;
 
-        let tr = document.createElement("tr");
-        tr.innerHTML = `
-            <td>${i + 1}</td>
-            <td>${a.aluno}</td>
-            <td>${a.faltas}</td>
-            <td>${sit}</td>
-            <td>${ultimaAcao(a.aluno)}</td>
-            <td>
-                <button onclick="registrarAcao('${a.aluno}',${a.faltas})">Registrar</button>
-                <button onclick="verHistorico('${a.aluno}')">Ver</button>
-            </td>
+        const cores = {
+    "Frequentando": "#2e7d32",
+    "Risco": "#f9a825",
+    "Possível desistência": "#e67e22",
+    "Desistente": "#c62828"
+};
+
+let corSituacao = cores[sit] || "#000";
+
+tr.innerHTML = `
+    <td>${i + 1}</td>
+    <td>${a.aluno}</td>
+    <td>${a.faltas}</td>
+    <td style="color: ${corSituacao}; font-weight: bold;">${sit}</td>
+    <td>${ultimaAcao(a.aluno)}</td>
+    <td>
+        <button onclick="registrarAcao('${a.aluno}',${a.faltas})">Registrar</button>
+    </td>
+`;
         `;
         tabela.appendChild(tr);
     });
@@ -201,20 +209,38 @@ function atualizarGrafico(contagem) {
     });
 }
 
-function graficoAcoes() {
+function graficoAcoes(turmaSelecionada) {
     let contagem = {};
-    historico.forEach(h => {
+    
+    // Filtramos o histórico para mostrar apenas o que pertence à turma atual
+    let historicoFiltrado = historico.filter(h => h.turma === turmaSelecionada);
+
+    historicoFiltrado.forEach(h => {
         contagem[h.acao] = (contagem[h.acao] || 0) + 1;
     });
     
+    let labels = Object.keys(contagem);
+    let valores = Object.values(contagem);
+
     if (chartAcoes) chartAcoes.destroy();
+    
+    // Se não houver ações para essa turma, o gráfico ficaria vazio ou daria erro
+    if (labels.length === 0) return; 
+
     chartAcoes = new Chart(document.getElementById("graficoAcoes"), {
         type: "bar",
         data: {
-            labels: Object.keys(contagem),
-            datasets: [{ label: "Total de Ações", data: Object.values(contagem), backgroundColor: '#3498db' }]
+            labels: labels,
+            datasets: [{
+                label: `Ações: ${turmaSelecionada}`,
+                data: valores,
+                backgroundColor: '#3498db'
+            }]
         },
-        options: { responsive: true, maintainAspectRatio: false }
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
     });
 }
 
@@ -289,3 +315,4 @@ function criarPainelTurma(turma) {
 </script>
 </body>
 </html>
+
