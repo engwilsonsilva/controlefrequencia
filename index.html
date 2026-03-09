@@ -6,7 +6,7 @@
     <style>
         /* --- ESTILO GERAL --- */
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; padding: 20px; color: #333; }
-        .container { max-width: 1200px; margin: auto; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .container { max-width: 1250px; margin: auto; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         
         /* Cabeçalho */
         .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 15px; }
@@ -28,12 +28,16 @@
         /* Tabela */
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th { background: #f8f9fa; text-align: left; padding: 12px; border-bottom: 2px solid #ddd; color: #555; }
-        td { padding: 12px; border-bottom: 1px solid #eee; vertical-align: middle; }
+        td { padding: 10px; border-bottom: 1px solid #eee; vertical-align: middle; }
         
         .badge { padding: 5px 10px; border-radius: 15px; color: white; font-weight: bold; font-size: 11px; text-transform: uppercase; }
         
+        /* Etiquetas das Disciplinas */
+        .tag-materia { display: inline-block; background: #f1f3f5; color: #495057; padding: 3px 6px; border-radius: 4px; font-size: 11px; margin: 2px; border: 1px solid #dee2e6; }
+        .tag-materia.alert { background: #ffebee; color: #c62828; border-color: #ffcdd2; font-weight: bold; }
+
         /* Botões */
-        button { cursor: pointer; border: none; padding: 8px 12px; border-radius: 4px; font-size: 13px; color: white; transition: 0.2s; margin-right: 5px; }
+        button { cursor: pointer; border: none; padding: 8px 12px; border-radius: 4px; font-size: 12px; color: white; transition: 0.2s; margin-right: 5px; }
         .btn-hist { background: #607d8b; }
         .btn-acao { background: #2196F3; }
         .btn-print { background: #555; padding: 10px 20px; font-size: 14px; }
@@ -55,11 +59,11 @@
             .cards, .top-bar button, select, label, input, .btn-acao, .btn-hist { display: none !important; }
             .top-bar { justify-content: center; border-bottom: 2px solid #000; }
             h2 { font-size: 18px; color: #000; }
-            table { font-size: 11px; width: 100%; }
-            th, td { border: 1px solid #000; padding: 5px; color: #000; }
+            table { font-size: 10px; width: 100%; }
+            th, td { border: 1px solid #000; padding: 4px; color: #000; }
             th { background-color: #eee !important; font-weight: bold; }
             .badge { border: 1px solid #000; color: #000 !important; background: none !important; }
-            /* Garante que cores de fundo saiam se a opção estiver marcada na impressora */
+            .tag-materia { border: 1px solid #999; color: #000 !important; }
             -webkit-print-color-adjust: exact; print-color-adjust: exact;
         }
     </style>
@@ -91,8 +95,8 @@
         <thead>
             <tr>
                 <th>Aluno</th>
-                <th>Situação</th>
-                <th>Última Ação</th>
+                <th>Situação Geral</th>
+                <th>Disciplinas Críticas</th> <th>Última Ação</th>
                 <th>Ações</th>
             </tr>
         </thead>
@@ -124,11 +128,9 @@ let estruturaEscola = {};
 let dadosConsolidados = [];
 let dadosFiltrados = [];
 
-// INÍCIO
 window.onload = carregarTudo;
 
 function carregarTudo() {
-    // 1. Carrega Histórico Geral
     fetch(`${HIST_URL}&t=${Date.now()}`).then(res => res.text()).then(data => {
         const json = JSON.parse(data.substring(47).slice(0, -2));
         historicoGlobal = json.table.rows.map(r => ({
@@ -136,8 +138,6 @@ function carregarTudo() {
             data: r.c[3]?.f || r.c[3]?.v,
             acao: r.c[4]?.v
         })).filter(h => h.aluno);
-
-        // 2. Depois carrega as Turmas (Config)
         carregarConfig();
     });
 }
@@ -149,18 +149,17 @@ function carregarConfig() {
         select.innerHTML = "<option value=''>Selecione...</option>";
         estruturaEscola = {};
 
-        // Mapeia Config: Col A=Turma, B=Disciplina, C=Aba, D=Carga
         json.table.rows.forEach(r => {
             let turma = r.c[0]?.v;
+            let disciplina = r.c[1]?.v; // Importante para exibir o nome da matéria
             let aba = r.c[2]?.v;
             let carga = r.c[3]?.v;
             if (turma && aba && carga) {
                 if (!estruturaEscola[turma]) estruturaEscola[turma] = [];
-                estruturaEscola[turma].push({ aba, cargaTotal: carga });
+                estruturaEscola[turma].push({ disciplina, aba, cargaTotal: carga });
             }
         });
 
-        // Ordena e preenche o menu
         Object.keys(estruturaEscola).sort((a,b)=>a.localeCompare(b, undefined, {numeric:true})).forEach(t => {
             let opt = document.createElement("option");
             opt.value = t; opt.textContent = t; select.appendChild(opt);
@@ -171,7 +170,6 @@ function carregarConfig() {
     });
 }
 
-// LÓGICA PRINCIPAL: Processa todas as matérias da turma
 async function processarTurma(turma) {
     if (!turma) return;
     document.getElementById("loading").style.display = "block";
@@ -181,7 +179,6 @@ async function processarTurma(turma) {
     let mapaAlunos = {};
     let materias = estruturaEscola[turma];
 
-    // Busca todas as abas
     const promessas = materias.map(mat => {
         return fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(mat.aba)}&t=${Date.now()}`)
             .then(res => res.text())
@@ -193,25 +190,33 @@ async function processarTurma(turma) {
 
     const resultados = await Promise.all(promessas);
 
-    // Consolida dados
     resultados.forEach(res => {
         let carga = res.mat.cargaTotal;
+        let nomeDisciplina = res.mat.disciplina; // Pega o nome "Matemática"
+
         res.linhas.forEach(linha => {
             let nome = linha.c[0]?.v;
             let faltas = linha.c[1]?.v || 0;
             if (nome) {
                 if (!mapaAlunos[nome]) {
-                    mapaAlunos[nome] = { nome: nome, status: "OK", prioridade: 0 };
+                    mapaAlunos[nome] = { nome: nome, status: "OK", prioridade: 0, detalhes: [] }; // Cria array detalhes
                 }
                 
-                // Calcula %
                 let perc = (faltas / carga) * 100;
                 let statusMat = "OK";
                 if (perc > 65) statusMat = "Desistente";
                 else if (perc > 50) statusMat = "Risco Alto";
                 else if (perc > 25) statusMat = "Atenção";
 
-                // Pega o pior status
+                // Se houver problema, salva no detalhe para exibir na coluna
+                if (statusMat !== "OK") {
+                    mapaAlunos[nome].detalhes.push({
+                        disciplina: nomeDisciplina,
+                        perc: perc.toFixed(0) + "%",
+                        status: statusMat
+                    });
+                }
+
                 let peso = statusMat === "OK" ? 0 : (statusMat === "Atenção" ? 1 : (statusMat === "Risco Alto" ? 2 : 3));
                 if (peso > mapaAlunos[nome].prioridade) {
                     mapaAlunos[nome].prioridade = peso;
@@ -230,8 +235,10 @@ async function processarTurma(turma) {
 function obterUltimaAcao(nome) {
     let acoes = historicoGlobal.filter(h => h.aluno === nome);
     if (acoes.length === 0) return "<span style='color:#ccc; font-size:11px'>Sem registro</span>";
-    // Pega a última data registrada
-    return `<span style="color:#555; font-weight:bold;">${acoes[acoes.length-1].data}</span>`;
+    // Pega a última (assumindo ordem da planilha)
+    let ultimaData = acoes[acoes.length-1].data;
+    // Tenta formatar se vier como Date object ou string
+    return `<span style="color:#555; font-weight:bold;">${ultimaData}</span>`;
 }
 
 function mostrarTabela() {
@@ -242,14 +249,26 @@ function mostrarTabela() {
 
     dadosFiltrados.forEach(aluno => {
         cont[aluno.status]++;
+        
+        // Monta o HTML das Disciplinas Críticas
+        let htmlDisciplinas = "";
+        if (aluno.detalhes.length > 0) {
+            aluno.detalhes.forEach(d => {
+                let classeExtra = (d.status === "Desistente" || d.status === "Risco Alto") ? "alert" : "";
+                htmlDisciplinas += `<span class="tag-materia ${classeExtra}">${d.disciplina}: ${d.perc}</span>`;
+            });
+        } else {
+            htmlDisciplinas = "<span style='color:#ccc; font-size:11px'>—</span>";
+        }
+
         let tr = document.createElement("tr");
         tr.innerHTML = `
             <td><b>${aluno.nome}</b></td>
             <td><span class="badge" style="background:${cores[aluno.status]}">${aluno.status}</span></td>
-            <td>${obterUltimaAcao(aluno.nome)}</td>
+            <td>${htmlDisciplinas}</td> <td>${obterUltimaAcao(aluno.nome)}</td>
             <td>
-                <button class="btn-hist" onclick="verHistorico('${aluno.nome}')">📜 Histórico</button>
-                <button class="btn-acao" onclick="registrarAcao('${aluno.nome}')">✍️ Ação</button>
+                <button class="btn-hist" onclick="verHistorico('${aluno.nome}')">📜 Ver</button>
+                <button class="btn-acao" onclick="registrarAcao('${aluno.nome}')">➕ Ação</button>
             </td>
         `;
         tbody.appendChild(tr);
@@ -268,7 +287,6 @@ function verHistorico(nome) {
     const lista = document.getElementById("modalLista");
     lista.innerHTML = "";
     
-    // Filtra e inverte a ordem (mais recente em cima)
     let acoes = historicoGlobal.filter(h => h.aluno === nome).reverse(); 
 
     if (acoes.length === 0) {
@@ -304,8 +322,8 @@ async function registrarAcao(nome) {
                 acao: acao
             })
         });
-        alert("Ação salva com sucesso!");
-        carregarTudo(); // Recarrega para atualizar a tabela na hora
+        alert("Salvo!");
+        carregarTudo(); 
     } catch (e) {
         alert("Erro ao salvar.");
     }
