@@ -5,21 +5,22 @@
     <title>Controle de Frequência</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { font-family: Arial; background: #f4f4f4; padding: 20px; }
-        .container { max-width: 1100px; margin: auto; background: white; padding: 20px; border-radius: 8px; }
-        .chart-box { max-width: 420px; margin: 20px auto; height: 300px; }
-        .cards { display: flex; gap: 10px; margin-bottom: 20px; }
-        .card { flex: 1; background: #eee; padding: 15px; border-radius: 6px; text-align: center; cursor: pointer; transition: 0.3s; }
-        .card:hover { background: #ddd; }
-        .card h3 { margin: 0; font-size: 28px; }
-        .painel-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 20px; }
-        .painel-turma { padding: 14px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.08); font-size: 14px; }
-        .painel-verde { background: #e6f6ea; border-left: 6px solid #2e7d32; }
-        .painel-amarelo { background: #fff8e1; border-left: 6px solid #f9a825; }
-        .painel-vermelho { background: #fdecea; border-left: 6px solid #c62828; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { padding: 8px; border-bottom: 1px solid #ddd; text-align: left; }
-        .alerta { background: #ffe0e0; border: 1px solid #c62828; padding: 10px; margin-bottom: 10px; border-radius: 6px; color: #c62828; }
+        body{ font-family:Arial; background:#f4f4f4; padding:20px; }
+        .container{ max-width:1100px; margin:auto; background:white; padding:20px; border-radius:8px; }
+        .chart-box{ flex: 1; min-width: 300px; height: 300px; margin: 10px; }
+        .charts-wrapper { display: flex; flex-wrap: wrap; justify-content: space-around; margin-bottom: 20px; }
+        .cards{ display:flex; gap:10px; margin-bottom:20px; flex-wrap: wrap; }
+        .card{ flex:1; min-width: 150px; background:#eee; padding:15px; border-radius:6px; text-align:center; cursor:pointer; }
+        .card h3{ margin:0; font-size:28px; }
+        .painel-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; margin-bottom:20px; }
+        .painel-turma{ padding:14px; border-radius:8px; box-shadow:0 2px 4px rgba(0,0,0,0.08); font-size:14px; }
+        .painel-verde{ background:#e6f6ea; border-left:6px solid #2e7d32; }
+        .painel-amarelo{ background:#fff8e1; border-left:6px solid #f9a825; }
+        .painel-vermelho{ background:#fdecea; border-left:6px solid #c62828; }
+        table{ width:100%; border-collapse:collapse; }
+        th,td{ padding:8px; border-bottom:1px solid #ddd; text-align: left; }
+        .alerta{ background:#ffe0e0; padding:10px; margin-bottom:10px; border-radius:6px; border: 1px solid #c62828; color: #c62828; }
+        input, select { padding: 8px; border-radius: 4px; border: 1px solid #ccc; margin-bottom: 10px; }
     </style>
 </head>
 <body>
@@ -28,22 +29,22 @@
     <h2>Controle de Frequência</h2>
     <div id="alertas"></div>
 
-    <h3>Painel Geral das Turmas</h3>
+    <h3>Painel geral das turmas</h3>
     <div id="painelTurmas" class="painel-grid"></div>
 
     <hr>
-    <label>Selecionar Turma:</label>
+    <label>Selecione a Turma:</label>
     <select id="turma"></select>
 
     <div class="cards">
-        <div class="card" onclick="redefinirFiltro()"><h3>Total</h3>Ver Todos</div>
+        <div class="card" onclick="redefinirFiltro()"><h3>All</h3>Todos</div>
         <div class="card" onclick="filtrar('Frequentando')"><h3 id="freq">0</h3>Frequentando</div>
         <div class="card" onclick="filtrar('Risco')"><h3 id="risco">0</h3>Risco</div>
-        <div class="card" onclick="filtrar('Possível desistência')"><h3 id="poss">0</h3>Possível desistência</div>
+        <div class="card" onclick="filtrar('Possível desistência')"><h3 id="poss">0</h3>Possível</div>
         <div class="card" onclick="filtrar('Desistente')"><h3 id="desist">0</h3>Desistentes</div>
     </div>
 
-    <div style="display: flex; flex-wrap: wrap;">
+    <div class="charts-wrapper">
         <div class="chart-box">
             <canvas id="grafico"></canvas>
         </div>
@@ -52,13 +53,13 @@
         </div>
     </div>
 
-    <h3>Buscar Aluno</h3>
-    <input id="busca" style="width: 100%; padding: 10px; margin-bottom: 20px;" placeholder="Digite o nome do aluno...">
+    <h3>Buscar aluno</h3>
+    <input id="busca" placeholder="Digite o nome do aluno..." style="width: 100%;">
 
-    <h3>Ranking de Faltas (Top 10)</h3>
+    <h3>Ranking de faltas (Top 10)</h3>
     <div id="ranking"></div>
 
-    <h3>Lista de Alunos</h3>
+    <h3>Lista de alunos</h3>
     <table>
         <thead>
             <tr>
@@ -66,7 +67,7 @@
                 <th>Aluno</th>
                 <th>Faltas</th>
                 <th>Situação</th>
-                <th>Última Ação</th>
+                <th>Última ação</th>
                 <th>Ações</th>
             </tr>
         </thead>
@@ -74,10 +75,11 @@
     </table>
 
     <br>
-    <button onclick="window.print()" style="padding: 10px 20px; cursor: pointer;">Imprimir Relatório</button>
+    <button onclick="window.print()">Imprimir Relatório</button>
 </div>
 
 <script>
+// CONFIGURAÇÕES
 const SHEET_ID = "1NBBtdsqbR4FzNyNsCuG3K3HdSRk6QzT-QR2mnjHEXJ0";
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxfr0KYW9y9jPhEdhDv3DsER3VFpoZEC3OU9lXOOceAKyjlLKXFQqNk3ff_Rt9l7rQO/exec";
 const HIST_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=Historico`;
@@ -87,7 +89,7 @@ let dados = [];
 let filtrados = [];
 let chart, chartAcoes;
 
-// Inicialização: Começa carregando o histórico
+// INÍCIO
 window.onload = () => carregarHistorico();
 
 function carregarHistorico() {
@@ -103,7 +105,7 @@ function carregarHistorico() {
                 acao: r.c[4]?.v
             })).filter(h => h.aluno);
             
-            carregarTurmas(); // Só carrega turmas depois de ter o histórico
+            carregarTurmas();
         });
 }
 
@@ -121,11 +123,10 @@ function carregarTurmas() {
                 opt.value = turma;
                 opt.textContent = turma;
                 select.appendChild(opt);
-                // (Opcional) criarPainelTurma(turma); 
             });
 
             select.addEventListener("change", () => carregarDados(select.value));
-            carregarDados(select.value); // Carrega a primeira turma da lista
+            carregarDados(select.value);
         });
 }
 
@@ -141,7 +142,7 @@ function carregarDados(turma) {
 
             filtrados = [...dados];
             mostrar();
-            graficoAcoes(turma); // <--- AQUI: Agora passamos a turma para o gráfico!
+            graficoAcoes(turma); 
             verificarAlertas();
         });
 }
@@ -154,11 +155,10 @@ function classificar(f) {
 }
 
 function mostrar() {
-    let contagem = { "Frequentando": 0, "Risco": 0, "Possível desistência": 0, "Desistente": 0 };
+    let cont = { "Frequentando": 0, "Risco": 0, "Possível desistência": 0, "Desistente": 0 };
     const tabela = document.getElementById("tabela");
     tabela.innerHTML = "";
 
-    // MAPA DE CORES (Passo 2 que você perguntou)
     const cores = {
         "Frequentando": "#2e7d32",
         "Risco": "#f9a825",
@@ -168,15 +168,15 @@ function mostrar() {
 
     filtrados.forEach((a, i) => {
         let sit = classificar(a.faltas);
-        contagem[sit]++;
-        let corTexto = cores[sit] || "#000"; // Define a cor com base na situação
+        cont[sit]++;
+        let corTexto = cores[sit] || "#000";
 
         let tr = document.createElement("tr");
         tr.innerHTML = `
             <td>${i + 1}</td>
             <td>${a.aluno}</td>
             <td>${a.faltas}</td>
-            <td style="color: ${corTexto}; font-weight: bold;">${sit}</td> 
+            <td style="color: ${corTexto}; font-weight: bold;">${sit}</td>
             <td>${ultimaAcao(a.aluno)}</td>
             <td>
                 <button onclick="registrarAcao('${a.aluno}',${a.faltas})">Registrar</button>
@@ -186,18 +186,32 @@ function mostrar() {
         tabela.appendChild(tr);
     });
 
-    document.getElementById("freq").innerText = contagem["Frequentando"];
-    document.getElementById("risco").innerText = contagem["Risco"];
-    document.getElementById("poss").innerText = contagem["Possível desistência"];
-    document.getElementById("desist").innerText = contagem["Desistente"];
+    document.getElementById("freq").innerText = cont["Frequentando"];
+    document.getElementById("risco").innerText = cont["Risco"];
+    document.getElementById("poss").innerText = cont["Possível desistência"];
+    document.getElementById("desist").innerText = cont["Desistente"];
 
-    atualizarGraficoGeral(contagem);
+    atualizarGraficoGeral(cont);
     ranking();
+}
+
+function atualizarGraficoGeral(cont) {
+    if (chart) chart.destroy();
+    chart = new Chart(document.getElementById("grafico"), {
+        type: "pie",
+        data: {
+            labels: Object.keys(cont),
+            datasets: [{ 
+                data: Object.values(cont), 
+                backgroundColor: ['#2e7d32', '#f9a825', '#e67e22', '#c62828'] 
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+    });
 }
 
 function graficoAcoes(turmaSelecionada) {
     let contagem = {};
-    // FILTRO: Só pega as ações que batem com a turma que está na tela
     let historicoDaTurma = historico.filter(h => h.turma === turmaSelecionada);
 
     historicoDaTurma.forEach(h => {
@@ -205,13 +219,12 @@ function graficoAcoes(turmaSelecionada) {
     });
     
     if (chartAcoes) chartAcoes.destroy();
-    
     chartAcoes = new Chart(document.getElementById("graficoAcoes"), {
         type: "bar",
         data: {
             labels: Object.keys(contagem),
             datasets: [{ 
-                label: "Ações nesta Turma", 
+                label: `Ações: ${turmaSelecionada}`, 
                 data: Object.values(contagem), 
                 backgroundColor: '#3498db' 
             }]
@@ -220,9 +233,67 @@ function graficoAcoes(turmaSelecionada) {
     });
 }
 
-// ... (as outras funções como ultimaAcao, verHistorico, registrarAcao continuam iguais)
+function ultimaAcao(aluno) {
+    let reg = historico.filter(h => h.aluno === aluno);
+    return reg.length > 0 ? reg[reg.length - 1].acao : "-";
+}
+
+function verHistorico(aluno) {
+    let registros = historico.filter(h => h.aluno === aluno);
+    if (registros.length === 0) return alert("Sem histórico para este aluno.");
+    let texto = registros.map(r => `${r.data}: ${r.acao}`).join("\n");
+    alert(`Histórico de ${aluno}:\n\n${texto}`);
+}
+
+function ranking() {
+    let top = [...dados].sort((a, b) => b.faltas - a.faltas).slice(0, 10);
+    document.getElementById("ranking").innerHTML = "<ol>" + top.map(a => `<li>${a.aluno} — ${a.faltas} faltas</li>`).join("") + "</ol>";
+}
+
+function filtrar(tipo) {
+    filtrados = dados.filter(a => classificar(a.faltas) === tipo);
+    mostrar();
+}
+
+function redefinirFiltro() {
+    filtrados = [...dados];
+    mostrar();
+}
+
+function verificarAlertas() {
+    const alertaDiv = document.getElementById("alertas");
+    alertaDiv.innerHTML = "";
+    let semAcao = dados.filter(a => classificar(a.faltas) !== "Frequentando" && ultimaAcao(a.aluno) === "-");
+    if (semAcao.length > 0) {
+        alertaDiv.innerHTML = `<div class="alerta">⚠ ${semAcao.length} alunos em risco sem ação registrada nesta turma.</div>`;
+    }
+}
+
+async function registrarAcao(aluno, faltas) {
+    let acao = prompt(`Qual ação realizada para ${aluno}?`);
+    if (!acao) return;
+
+    let turma = document.getElementById("turma").value;
+    let data = new Date().toLocaleDateString('pt-BR');
+
+    try {
+        await fetch(SCRIPT_URL, {
+            method: "POST",
+            body: JSON.stringify({ turma, aluno, faltas, data, acao })
+        });
+        alert("Ação registrada com sucesso!");
+        carregarHistorico(); 
+    } catch (e) {
+        alert("Erro ao salvar no Google Sheets.");
+    }
+}
+
+document.getElementById("busca").addEventListener("input", function() {
+    let termo = this.value.toLowerCase();
+    filtrados = dados.filter(a => a.aluno.toLowerCase().includes(termo));
+    mostrar();
+});
 </script>
+
 </body>
 </html>
-
-
