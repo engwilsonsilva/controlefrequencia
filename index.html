@@ -4,53 +4,42 @@
     <meta charset="UTF-8">
     <title>Monitoramento de Evasão</title>
     <style>
-        /* --- ESTILOS VISUAIS (IDÊNTICOS) --- */
+        /* --- ESTILOS VISUAIS (MANTIDOS) --- */
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; padding: 20px; color: #333; }
         .container { max-width: 1250px; margin: auto; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        
         .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 15px; }
         h2 { margin: 0; color: #2c3e50; }
         select { padding: 10px; font-size: 14px; border-radius: 5px; min-width: 200px; border: 1px solid #ccc; }
-        
         .cards { display: flex; gap: 15px; margin-bottom: 25px; }
         .card { flex: 1; padding: 15px; text-align: center; border-radius: 8px; background: #fff; border: 1px solid #ddd; border-top: 4px solid #ccc; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .card h3 { margin: 0; font-size: 28px; }
         .card p { margin: 5px 0 0; font-size: 12px; text-transform: uppercase; color: #666; }
-        
         .ok { border-color: #2e7d32; color: #2e7d32; }
         .atencao { border-color: #f9a825; color: #f9a825; }
         .risco { border-color: #e67e22; color: #e67e22; }
         .critico { border-color: #c62828; color: #c62828; }
-        
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th { background: #f8f9fa; text-align: left; padding: 12px; border-bottom: 2px solid #ddd; color: #555; }
         td { padding: 10px; border-bottom: 1px solid #eee; vertical-align: middle; }
         .badge { padding: 5px 10px; border-radius: 15px; color: white; font-weight: bold; font-size: 11px; text-transform: uppercase; }
-        
         .tag-materia { display: inline-block; background: #f1f3f5; color: #495057; padding: 3px 6px; border-radius: 4px; font-size: 11px; margin: 2px; border: 1px solid #dee2e6; }
         .tag-materia.alert { background: #ffebee; color: #c62828; border-color: #ffcdd2; font-weight: bold; }
-
         button { cursor: pointer; border: none; padding: 8px 12px; border-radius: 4px; font-size: 12px; color: white; transition: 0.2s; margin-right: 5px; }
         .btn-hist { background: #607d8b; }
         .btn-acao { background: #2196F3; }
         .btn-print { background: #555; padding: 10px 20px; font-size: 14px; }
         .btn-import { background: #9c27b0; padding: 10px 20px; font-size: 14px; margin-right: 10px; }
         button:hover { opacity: 0.9; }
-
-        /* --- JANELAS MODAIS --- */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
         .modal-content { background: white; width: 600px; max-width: 95%; padding: 25px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); position: relative; max-height: 90vh; overflow-y: auto; }
         .close-btn { position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; color: #999; }
-        
         .hist-lista { max-height: 400px; overflow-y: auto; margin-top: 15px; }
         .hist-item { border-bottom: 1px solid #eee; padding: 10px 0; }
         .hist-data { font-size: 12px; font-weight: bold; color: #666; display: block; margin-bottom: 4px; }
         .hist-texto { font-size: 14px; color: #333; line-height: 1.4; }
-
         textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-top: 10px; box-sizing: border-box; }
         #txtImport { height: 100px; font-family: monospace; font-size: 11px; white-space: pre; overflow: scroll; }
         #txtDetalheAcao { height: 80px; font-family: inherit; font-size: 14px; resize: none; }
-        
         .config-colunas { display: flex; gap: 10px; margin-top: 10px; background: #f9f9f9; padding: 10px; border-radius: 5px; border: 1px solid #eee; }
         .config-colunas div { flex: 1; }
         .config-colunas label, .campo-label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #555; }
@@ -60,12 +49,8 @@
         .tabela-previa { width: 100%; font-size: 11px; border-collapse: collapse; }
         .tabela-previa th, .tabela-previa td { border: 1px solid #ddd; padding: 4px; text-align: left; }
         .tabela-previa th { background: #f0f0f0; }
-        
         .info-atualizacao { font-size: 12px; font-weight: bold; margin-top: 5px; display: inline-block; padding: 3px 8px; border-radius: 4px; background: #f1f3f5; }
-
         @media print {
-            body { background: white; padding: 0; margin: 0; }
-            .container { box-shadow: none; border: none; width: 100%; max-width: 100%; padding: 0; }
             .cards, .top-bar button, select, label, input, .btn-acao, .btn-hist, .btn-import, .info-atualizacao { display: none !important; }
             .top-bar { justify-content: center; border-bottom: 2px solid #000; }
             h2 { font-size: 18px; color: #000; }
@@ -74,7 +59,6 @@
             th { background-color: #eee !important; font-weight: bold; }
             .badge { border: 1px solid #000; color: #000 !important; background: none !important; }
             .tag-materia { border: 1px solid #999; color: #000 !important; }
-            -webkit-print-color-adjust: exact; print-color-adjust: exact;
         }
     </style>
 </head>
@@ -180,8 +164,8 @@ const HIST_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx
 let historicoGlobal = [];
 let historicoSistema = [];
 let estruturaEscola = {}; 
-let dadosConsolidados = []; // SEMPRE contém a turma inteira
-let dadosFiltrados = [];    // Apenas os que aparecem na tabela
+let dadosConsolidados = []; 
+let dadosFiltrados = [];    
 let listaMateriasSimples = []; 
 let alunoAcaoPendente = ""; 
 
@@ -235,7 +219,11 @@ async function processarTurma(turma) {
     const promessas = materias.map(mat => {
         return fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(mat.aba)}&t=${Date.now()}`)
             .then(res => res.text()).then(txt => {
-                try { return { mat, linhas: JSON.parse(txt.substring(47).slice(0,-2)).table.rows }; } catch(e) { return { mat, linhas: [] }; }
+                try { 
+                    const rawData = JSON.parse(txt.substring(47).slice(0,-2)).table.rows;
+                    // --- AJUSTE AQUI: Remove a primeira linha (cabeçalho) ---
+                    return { mat, linhas: rawData.slice(1) }; 
+                } catch(e) { return { mat, linhas: [] }; }
             });
     });
     const resultados = await Promise.all(promessas);
@@ -254,11 +242,10 @@ async function processarTurma(turma) {
         });
     });
     dadosConsolidados = Object.values(mapaAlunos).sort((a,b) => b.prioridade - a.prioridade);
-    redefinirFiltro(); // Mostra tudo inicialmente
+    redefinirFiltro();
     document.getElementById("loading").style.display = "none";
 }
 
-// CORREÇÃO: Função para redefinir e atualizar cards SEMPRE pelo consolidado
 function redefinirFiltro() {
     dadosFiltrados = [...dadosConsolidados];
     document.getElementById("busca").value = "";
@@ -273,20 +260,15 @@ function filtrar(tipo) {
 function mostrar() {
     const tbody = document.getElementById("tabela-corpo");
     tbody.innerHTML = "";
-    
-    // ATUALIZAÇÃO DOS CARDS: Sempre baseada no dadosConsolidados (turma toda)
     let cont = { "OK": 0, "Atenção": 0, "Risco Alto": 0, "Desistente": 0 };
     dadosConsolidados.forEach(aluno => {
         cont[aluno.status]++;
     });
-    
     document.getElementById("c-total").innerText = dadosConsolidados.length;
     document.getElementById("c-ok").innerText = cont["OK"];
     document.getElementById("c-atencao").innerText = cont["Atenção"];
     document.getElementById("c-risco").innerText = cont["Risco Alto"];
     document.getElementById("c-critico").innerText = cont["Desistente"];
-
-    // RENDERIZAÇÃO DA TABELA: Baseada no dadosFiltrados (quem o usuário quer ver)
     let cores = { "OK": "#2e7d32", "Atenção": "#f9a825", "Risco Alto": "#e67e22", "Desistente": "#c62828" };
     dadosFiltrados.forEach(aluno => {
         let hDisc = aluno.detalhes.map(d => `<span class="tag-materia ${d.status==='Desistente'||d.status==='Risco Alto'?'alert':''}">${d.disciplina}: ${d.faltas} (${d.perc})</span>`).join("") || "<span style='color:#ccc; font-size:11px'>—</span>";
