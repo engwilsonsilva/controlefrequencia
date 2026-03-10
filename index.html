@@ -38,12 +38,15 @@
         .btn-acao { background: #2196F3; }
         .btn-print { background: #555; padding: 10px 20px; font-size: 14px; }
         .btn-import { background: #9c27b0; padding: 10px 20px; font-size: 14px; margin-right: 10px; }
-        .btn-criar { background: #4CAF50; padding: 10px 20px; font-size: 14px; margin-right: 10px; } /* BOTÃO NOVO VERDE */
+        .btn-criar { background: #4CAF50; padding: 10px 20px; font-size: 14px; margin-right: 10px; } 
         
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
         .modal-content { background: white; width: 600px; max-width: 95%; padding: 25px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); position: relative; max-height: 90vh; overflow-y: auto; }
         .close-btn { position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; color: #999; }
-        textarea, input[type="number"], select.input-modal { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-top: 5px; margin-bottom: 15px; box-sizing: border-box; }
+        
+        /* CORREÇÃO AQUI: Aplica o estilo bonito para todos os campos com a classe input-modal */
+        textarea, .input-modal { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-top: 5px; margin-bottom: 15px; box-sizing: border-box; }
+        
         .info-atualizacao { font-size: 12px; font-weight: bold; margin-top: 5px; display: inline-block; padding: 3px 8px; border-radius: 4px; background: #f1f3f5; }
         
         @media print {
@@ -103,8 +106,8 @@
         <span class="close-btn" onclick="fecharModal('modalNovaTurma')">&times;</span>
         <h3>🆕 Gerar Nova Turma</h3>
         
-        <label style="font-size:12px; font-weight:bold; color:#555;">Número da Turma:</label>
-        <input type="number" id="txtNovaTurmaNum" placeholder="Ex: 11" class="input-modal">
+        <label style="font-size:12px; font-weight:bold; color:#555;">Nome ou Número da Turma:</label>
+        <input type="text" id="txtNovaTurmaNum" placeholder="Ex: 11 ou 11A" class="input-modal">
         
         <label style="font-size:12px; font-weight:bold; color:#555;">Modalidade:</label>
         <select id="selNovaTurmaMod" class="input-modal">
@@ -126,10 +129,10 @@
     <div class="modal-content"><span class="close-btn" onclick="fecharModal('modalHist')">&times;</span><h3 id="modalTitulo">Histórico</h3><div id="modalLista" style="max-height: 400px; overflow-y: auto; margin-top: 15px;">Carregando...</div></div>
 </div>
 <div id="modalAcao" class="modal-overlay">
-    <div class="modal-content" style="max-width: 450px;"><span class="close-btn" onclick="fecharModal('modalAcao')">&times;</span><h3>Registrar Ação</h3><p id="acaoNomeAluno" style="font-weight:bold; color: #2196F3; font-size: 16px; margin-bottom: 15px;"></p><select id="selTipoAcao" class="input-modal"><option value="📞 Ligação Telefônica">📞 Ligação Telefônica</option><option value="📱 Mensagem WhatsApp">📱 Mensagem WhatsApp</option><option value="🤝 Reunião Presencial">🤝 Reunião Presencial</option><option value="🏠 Visita Domiciliar">🏠 Visita Domiciliar</option><option value="⚠️ Conselho Tutelar">⚠️ Encaminhado ao Conselho Tutelar</option><option value="📝 Outro">📝 Outro</option></select><textarea id="txtDetalheAcao" placeholder="Escreva o retorno da conversa..." style="height:80px;"></textarea><button onclick="salvarAcaoPadronizada()" style="background:#2196F3; width:100%; padding:12px; margin-top:15px; color: white; border-radius: 5px; border: none;">💾 Salvar</button></div>
+    <div class="modal-content" style="max-width: 450px;"><span class="close-btn" onclick="fecharModal('modalAcao')">&times;</span><h3>Registrar Ação</h3><p id="acaoNomeAluno" style="font-weight:bold; color: #2196F3; font-size: 16px; margin-bottom: 15px;"></p><select id="selTipoAcao" class="input-modal"><option value="📞 Ligação Telefônica">📞 Ligação Telefônica</option><option value="📱 Mensagem WhatsApp">📱 Mensagem WhatsApp</option><option value="🤝 Reunião Presencial">🤝 Reunião Presencial</option><option value="🏠 Visita Domiciliar">🏠 Visita Domiciliar</option><option value="⚠️ Conselho Tutelar">⚠️ Encaminhado ao Conselho Tutelar</option><option value="📝 Outro">📝 Outro</option></select><textarea id="txtDetalheAcao" placeholder="Escreva o retorno da conversa..." style="height:80px;" class="input-modal"></textarea><button onclick="salvarAcaoPadronizada()" style="background:#2196F3; width:100%; padding:12px; margin-top:15px; color: white; border-radius: 5px; border: none;">💾 Salvar</button></div>
 </div>
 <div id="modalImport" class="modal-overlay">
-    <div class="modal-content"><span class="close-btn" onclick="fecharModal('modalImport')">&times;</span><h3>Importar Frequência</h3><select id="selImportMateria" class="input-modal"></select><textarea id="txtImport" style="height:100px; font-family:monospace;" placeholder="Cole aqui..." oninput="atualizarPrevia()"></textarea><div style="display:flex; gap:10px;"><div style="flex:1;"><label style="font-size:11px;">Coluna Nome</label><input type="number" id="colNome" value="2" class="input-modal" onchange="atualizarPrevia()"></div><div style="flex:1;"><label style="font-size:11px;">Coluna Faltas</label><input type="number" id="colFaltas" value="5" class="input-modal" onchange="atualizarPrevia()"></div></div><div class="previa-box"><div style="font-size:12px; font-weight:bold; color:#9c27b0; margin-bottom:5px;">👁️ Prévia (Ativos Detectados):</div><table style="width:100%; font-size:11px; border-collapse: collapse;"><tbody id="tbodyPrevia"></tbody></table></div><button onclick="executarImportacao()" style="background:#9c27b0; width:100%; padding:12px; margin-top:15px; color:white; border:none; border-radius:5px;">💾 Salvar na Planilha</button></div>
+    <div class="modal-content"><span class="close-btn" onclick="fecharModal('modalImport')">&times;</span><h3>Importar Frequência</h3><select id="selImportMateria" class="input-modal"></select><textarea id="txtImport" style="height:100px; font-family:monospace;" placeholder="Cole aqui..." oninput="atualizarPrevia()" class="input-modal"></textarea><div style="display:flex; gap:10px;"><div style="flex:1;"><label style="font-size:11px;">Coluna Nome</label><input type="number" id="colNome" value="2" class="input-modal" onchange="atualizarPrevia()"></div><div style="flex:1;"><label style="font-size:11px;">Coluna Faltas</label><input type="number" id="colFaltas" value="5" class="input-modal" onchange="atualizarPrevia()"></div></div><div class="previa-box"><div style="font-size:12px; font-weight:bold; color:#9c27b0; margin-bottom:5px;">👁️ Prévia (Ativos Detectados):</div><table style="width:100%; font-size:11px; border-collapse: collapse;"><tbody id="tbodyPrevia"></tbody></table></div><button onclick="executarImportacao()" style="background:#9c27b0; width:100%; padding:12px; margin-top:15px; color:white; border:none; border-radius:5px;">💾 Salvar na Planilha</button></div>
 </div>
 
 <script>
@@ -182,7 +185,6 @@ function carregarConfig() {
     });
 }
 
-// NOVA FUNÇÃO: Preenche o menu de Cursos automaticamente
 function carregarMatrizes() {
     fetch(`${MATRIZES_URL}&t=${Date.now()}`).then(res => res.text()).then(data => {
         try {
@@ -198,15 +200,14 @@ function carregarMatrizes() {
     });
 }
 
-// NOVA FUNÇÃO: Envia o comando para o Script construir a Turma
 function abrirCriarTurma() { document.getElementById("modalNovaTurma").style.display = "flex"; }
 
 async function executarCriarTurma() {
-    let num = document.getElementById("txtNovaTurmaNum").value;
+    let num = document.getElementById("txtNovaTurmaNum").value.trim(); // Aceita textos com letras
     let mod = document.getElementById("selNovaTurmaMod").value;
     let curso = document.getElementById("selNovaTurmaCurso").value;
 
-    if(!num || !curso) return alert("Por favor, preencha o número e selecione o curso.");
+    if(!num || !curso) return alert("Por favor, preencha o nome/número e selecione o curso.");
 
     let btn = document.getElementById("btnSalvarTurma");
     btn.innerText = "⏳ Construindo abas no Google Sheets... Aguarde...";
@@ -220,7 +221,7 @@ async function executarCriarTurma() {
         alert("✅ Turma criada com sucesso na Planilha! O painel será atualizado.");
         fecharModal('modalNovaTurma');
         document.getElementById("txtNovaTurmaNum").value = "";
-        carregarTudo(); // Recarrega para a turma aparecer no menu
+        carregarTudo(); 
     } catch(e) {
         alert("Erro ao comunicar com a planilha.");
     } finally {
