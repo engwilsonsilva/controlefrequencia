@@ -13,15 +13,15 @@
         
         .cards { display: flex; gap: 8px; margin-bottom: 25px; }
         .card { flex: 1; padding: 12px 5px; text-align: center; border-radius: 8px; background: #fff; border: 1px solid #ddd; border-top: 4px solid #ccc; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: 0.2s; }
+        .card:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
         .card h3 { margin: 0; font-size: 24px; }
         .card p { margin: 5px 0 0; font-size: 10px; text-transform: uppercase; color: #666; font-weight: bold; }
         
-        /* Cores dos Cards Padronizadas */
         .ok { border-top-color: #2e7d32; color: #2e7d32; }
-        .alerta { border-top-color: #fbc02d; color: #fbc02d; } 
-        .atencao { border-top-color: #f9a825; color: #f9a825; } /* LARANJA */
-        .risco { border-top-color: #e67e22; color: #e67e22; }    /* LARANJA ESCURO */
-        .critico { border-top-color: #c62828; color: #c62828; }  /* VERMELHO */
+        .alerta { border-top-color: #fbc02d; color: #fbc02d; }
+        .atencao { border-top-color: #f9a825; color: #f9a825; } 
+        .risco { border-top-color: #e67e22; color: #e67e22; }    
+        .critico { border-top-color: #c62828; color: #c62828; }  
         
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th { background: #f8f9fa; text-align: left; padding: 12px; border-bottom: 2px solid #ddd; color: #555; font-size: 13px; }
@@ -38,15 +38,16 @@
         .btn-acao { background: #2196F3; }
         .btn-print { background: #555; padding: 10px 20px; font-size: 14px; }
         .btn-import { background: #9c27b0; padding: 10px 20px; font-size: 14px; margin-right: 10px; }
+        .btn-criar { background: #4CAF50; padding: 10px 20px; font-size: 14px; margin-right: 10px; } /* BOTÃO NOVO VERDE */
         
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
         .modal-content { background: white; width: 600px; max-width: 95%; padding: 25px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); position: relative; max-height: 90vh; overflow-y: auto; }
         .close-btn { position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; color: #999; }
-        textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-top: 10px; box-sizing: border-box; }
+        textarea, input[type="number"], select.input-modal { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-top: 5px; margin-bottom: 15px; box-sizing: border-box; }
         .info-atualizacao { font-size: 12px; font-weight: bold; margin-top: 5px; display: inline-block; padding: 3px 8px; border-radius: 4px; background: #f1f3f5; }
         
         @media print {
-            .cards, .top-bar button, select, label, input, .btn-acao, .btn-hist, .btn-import, .info-atualizacao { display: none !important; }
+            .cards, .top-bar button, select, label, input, .btn-acao, .btn-hist, .btn-import, .info-atualizacao, .btn-criar { display: none !important; }
             .top-bar { justify-content: center; border-bottom: 2px solid #000; }
             table { font-size: 10px; width: 100%; }
             th, td { border: 1px solid #000; padding: 4px; color: #000; }
@@ -63,6 +64,7 @@
             <div id="dataAtualizacao" class="info-atualizacao" style="display:none;"></div>
         </div>
         <div style="display:flex; gap:10px; align-items:center;">
+            <button onclick="abrirCriarTurma()" class="btn-criar">🆕 Criar Turma</button>
             <button onclick="abrirImportacao()" class="btn-import">📤 Importar Dados</button>
             <button onclick="window.print()" class="btn-print">🖨️ Imprimir</button>
             <select id="selTurma"><option>Carregando...</option></select>
@@ -73,8 +75,8 @@
         <div class="card" onclick="redefinirFiltro()" style="border-top-color:#555;"><h3 id="c-total">0</h3><p>Total Alunos</p></div>
         <div class="card ok" onclick="filtrar('OK')"><h3 id="c-ok">0</h3><p>Frequentando</p></div>
         <div class="card alerta" onclick="filtrar('Alerta')"><h3 id="c-alerta">0</h3><p>Alerta (15-25%)</p></div>
-        <div class="card atencao" onclick="filtrar('Em Risco')"><h3 id="c-atencao">0</h3><p>Em Risco (26-50%)</p></div>
-        <div class="card risco" onclick="filtrar('Risco Muito Alto')"><h3 id="c-risco">0</h3><p>Risco Muito Alto (51-65%)</p></div>
+        <div class="card atencao" onclick="filtrar('Atenção')"><h3 id="c-atencao">0</h3><p>Atenção (26-50%)</p></div>
+        <div class="card risco" onclick="filtrar('Risco Alto')"><h3 id="c-risco">0</h3><p>Risco Alto (51-65%)</p></div>
         <div class="card critico" onclick="filtrar('Desistente')"><h3 id="c-critico">0</h3><p>Desistente (>65%)</p></div>
     </div>
 
@@ -93,58 +95,49 @@
         </thead>
         <tbody id="tabela-corpo"></tbody>
     </table>
-    
     <div id="loading" style="text-align:center; padding:20px; color:#666;">Carregando dados...</div>
 </div>
 
-<div id="modalHist" class="modal-overlay">
-    <div class="modal-content">
-        <span class="close-btn" onclick="fecharModal('modalHist')">&times;</span>
-        <h3 id="modalTitulo">Histórico</h3>
-        <div id="modalLista" style="max-height: 400px; overflow-y: auto; margin-top: 15px;">Carregando...</div>
-    </div>
-</div>
-
-<div id="modalAcao" class="modal-overlay">
-    <div class="modal-content" style="max-width: 450px;">
-        <span class="close-btn" onclick="fecharModal('modalAcao')">&times;</span>
-        <h3>Registrar Ação</h3>
-        <p id="acaoNomeAluno" style="font-weight:bold; color: #2196F3; font-size: 16px; margin-bottom: 15px;"></p>
-        <select id="selTipoAcao" style="width:100%; padding:10px; margin-bottom: 15px;">
-            <option value="📞 Ligação Telefônica">📞 Ligação Telefônica</option>
-            <option value="📱 Mensagem WhatsApp">📱 Mensagem WhatsApp</option>
-            <option value="🤝 Reunião Presencial">🤝 Reunião Presencial</option>
-            <option value="🏠 Visita Domiciliar">🏠 Visita Domiciliar</option>
-            <option value="⚠️ Conselho Tutelar">⚠️ Encaminhado ao Conselho Tutelar</option>
-            <option value="📝 Outro">📝 Outro</option>
+<div id="modalNovaTurma" class="modal-overlay">
+    <div class="modal-content" style="max-width: 400px;">
+        <span class="close-btn" onclick="fecharModal('modalNovaTurma')">&times;</span>
+        <h3>🆕 Gerar Nova Turma</h3>
+        
+        <label style="font-size:12px; font-weight:bold; color:#555;">Número da Turma:</label>
+        <input type="number" id="txtNovaTurmaNum" placeholder="Ex: 11" class="input-modal">
+        
+        <label style="font-size:12px; font-weight:bold; color:#555;">Modalidade:</label>
+        <select id="selNovaTurmaMod" class="input-modal">
+            <option value="PRESENCIAL">Presencial</option>
+            <option value="EAD (Semana)">EAD (Semana)</option>
+            <option value="EAD (Sábado)">EAD (Sábado)</option>
         </select>
-        <textarea id="txtDetalheAcao" placeholder="Escreva o retorno da conversa..."></textarea>
-        <button onclick="salvarAcaoPadronizada()" style="background:#2196F3; width:100%; padding:12px; margin-top:15px; color: white; border-radius: 5px;">💾 Salvar</button>
+        
+        <label style="font-size:12px; font-weight:bold; color:#555;">Curso:</label>
+        <select id="selNovaTurmaCurso" class="input-modal">
+            <option value="">Carregando cursos...</option>
+        </select>
+        
+        <button id="btnSalvarTurma" onclick="executarCriarTurma()" style="background:#4CAF50; width:100%; padding:12px; margin-top:5px; font-size:16px; color: white; border: none; border-radius: 5px; cursor: pointer;">⚙️ Construir Turma na Planilha</button>
     </div>
 </div>
 
+<div id="modalHist" class="modal-overlay">
+    <div class="modal-content"><span class="close-btn" onclick="fecharModal('modalHist')">&times;</span><h3 id="modalTitulo">Histórico</h3><div id="modalLista" style="max-height: 400px; overflow-y: auto; margin-top: 15px;">Carregando...</div></div>
+</div>
+<div id="modalAcao" class="modal-overlay">
+    <div class="modal-content" style="max-width: 450px;"><span class="close-btn" onclick="fecharModal('modalAcao')">&times;</span><h3>Registrar Ação</h3><p id="acaoNomeAluno" style="font-weight:bold; color: #2196F3; font-size: 16px; margin-bottom: 15px;"></p><select id="selTipoAcao" class="input-modal"><option value="📞 Ligação Telefônica">📞 Ligação Telefônica</option><option value="📱 Mensagem WhatsApp">📱 Mensagem WhatsApp</option><option value="🤝 Reunião Presencial">🤝 Reunião Presencial</option><option value="🏠 Visita Domiciliar">🏠 Visita Domiciliar</option><option value="⚠️ Conselho Tutelar">⚠️ Encaminhado ao Conselho Tutelar</option><option value="📝 Outro">📝 Outro</option></select><textarea id="txtDetalheAcao" placeholder="Escreva o retorno da conversa..." style="height:80px;"></textarea><button onclick="salvarAcaoPadronizada()" style="background:#2196F3; width:100%; padding:12px; margin-top:15px; color: white; border-radius: 5px; border: none;">💾 Salvar</button></div>
+</div>
 <div id="modalImport" class="modal-overlay">
-    <div class="modal-content">
-        <span class="close-btn" onclick="fecharModal('modalImport')">&times;</span>
-        <h3>Importar Frequência</h3>
-        <select id="selImportMateria" style="width:100%; margin: 10px 0; padding: 8px;"></select>
-        <textarea id="txtImport" style="height:100px; font-family:monospace;" placeholder="Cole aqui..." oninput="atualizarPrevia()"></textarea>
-        <div style="display:flex; gap:10px; margin-top:10px;">
-            <div style="flex:1;"><label style="font-size:11px;">Coluna Nome (Nº)</label><input type="number" id="colNome" value="2" style="width:100%; padding:5px;" onchange="atualizarPrevia()"></div>
-            <div style="flex:1;"><label style="font-size:11px;">Coluna Faltas (Nº)</label><input type="number" id="colFaltas" value="5" style="width:100%; padding:5px;" onchange="atualizarPrevia()"></div>
-        </div>
-        <div class="previa-box">
-            <div id="tbodyPrevia" style="font-size:11px;"></div>
-        </div>
-        <button onclick="executarImportacao()" style="background:#9c27b0; width:100%; padding:12px; margin-top:15px; color:white;">💾 Salvar na Planilha</button>
-    </div>
+    <div class="modal-content"><span class="close-btn" onclick="fecharModal('modalImport')">&times;</span><h3>Importar Frequência</h3><select id="selImportMateria" class="input-modal"></select><textarea id="txtImport" style="height:100px; font-family:monospace;" placeholder="Cole aqui..." oninput="atualizarPrevia()"></textarea><div style="display:flex; gap:10px;"><div style="flex:1;"><label style="font-size:11px;">Coluna Nome</label><input type="number" id="colNome" value="2" class="input-modal" onchange="atualizarPrevia()"></div><div style="flex:1;"><label style="font-size:11px;">Coluna Faltas</label><input type="number" id="colFaltas" value="5" class="input-modal" onchange="atualizarPrevia()"></div></div><div class="previa-box"><div style="font-size:12px; font-weight:bold; color:#9c27b0; margin-bottom:5px;">👁️ Prévia (Ativos Detectados):</div><table style="width:100%; font-size:11px; border-collapse: collapse;"><tbody id="tbodyPrevia"></tbody></table></div><button onclick="executarImportacao()" style="background:#9c27b0; width:100%; padding:12px; margin-top:15px; color:white; border:none; border-radius:5px;">💾 Salvar na Planilha</button></div>
 </div>
 
 <script>
 const SHEET_ID = "1NBBtdsqbR4FzNyNsCuG3K3HdSRk6QzT-QR2mnjHEXJ0"; 
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxYJlXYdZID3PUkDWnYDBMhD_IshytwlEsPnT1AO_1nZFRapx4D0ssFwXaZgRDKfc4F/exec"; 
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxqBr2tffTDLv4ijcqI41r7l7nkMGZBlo-pAKpMhkW1jpSxhE5N2iCZEZRm774Yf4U/exec"; 
 const CONFIG_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&headers=0&sheet=Config`;
 const HIST_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&headers=0&sheet=Historico`;
+const MATRIZES_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&headers=0&sheet=Matrizes`;
 
 let historicoGlobal = [], historicoSistema = [], estruturaEscola = {}, dadosConsolidados = [], dadosFiltrados = [], listaMateriasSimples = [], alunoAcaoPendente = "";
 
@@ -167,7 +160,7 @@ function carregarConfig() {
         const select = document.getElementById("selTurma"), sImport = document.getElementById("selImportMateria");
         select.innerHTML = "<option value=''>Selecione a turma...</option>";
         sImport.innerHTML = "<option value=''>Selecione a matéria...</option>";
-        estruturaEscola = {}; 
+        estruturaEscola = {}; listaMateriasSimples = [];
         let rawRows = json.table.rows.slice(1);
         rawRows.forEach(r => {
             let t = r.c[0]?.v, d = r.c[1]?.v, a = r.c[2]?.v, c = r.c[3]?.v;
@@ -184,8 +177,56 @@ function carregarConfig() {
             let opt = document.createElement("option"); opt.value = m.aba; opt.textContent = m.nome; sImport.appendChild(opt);
         });
         select.addEventListener("change", () => processarTurma(select.value));
+        carregarMatrizes(); // Carrega os cursos no menu Modal
         document.getElementById("loading").style.display = "none";
     });
+}
+
+// NOVA FUNÇÃO: Preenche o menu de Cursos automaticamente
+function carregarMatrizes() {
+    fetch(`${MATRIZES_URL}&t=${Date.now()}`).then(res => res.text()).then(data => {
+        try {
+            const json = JSON.parse(data.substring(47).slice(0, -2));
+            const selectCurso = document.getElementById("selNovaTurmaCurso");
+            selectCurso.innerHTML = "<option value=''>Escolha o Curso...</option>";
+            let cursosEncontrados = new Set();
+            json.table.rows.slice(1).forEach(r => { if(r.c[0]?.v) cursosEncontrados.add(r.c[0].v); });
+            cursosEncontrados.forEach(c => {
+                let opt = document.createElement("option"); opt.value = c; opt.textContent = c; selectCurso.appendChild(opt);
+            });
+        } catch(e) { console.log("Aba Matrizes vazia ou não criada ainda."); }
+    });
+}
+
+// NOVA FUNÇÃO: Envia o comando para o Script construir a Turma
+function abrirCriarTurma() { document.getElementById("modalNovaTurma").style.display = "flex"; }
+
+async function executarCriarTurma() {
+    let num = document.getElementById("txtNovaTurmaNum").value;
+    let mod = document.getElementById("selNovaTurmaMod").value;
+    let curso = document.getElementById("selNovaTurmaCurso").value;
+
+    if(!num || !curso) return alert("Por favor, preencha o número e selecione o curso.");
+
+    let btn = document.getElementById("btnSalvarTurma");
+    btn.innerText = "⏳ Construindo abas no Google Sheets... Aguarde...";
+    btn.disabled = true;
+
+    try {
+        await fetch(SCRIPT_URL, {
+            method: "POST",
+            body: JSON.stringify({ tipo: "CRIAR_TURMA", numeroTurma: num, modalidade: mod, curso: curso })
+        });
+        alert("✅ Turma criada com sucesso na Planilha! O painel será atualizado.");
+        fecharModal('modalNovaTurma');
+        document.getElementById("txtNovaTurmaNum").value = "";
+        carregarTudo(); // Recarrega para a turma aparecer no menu
+    } catch(e) {
+        alert("Erro ao comunicar com a planilha.");
+    } finally {
+        btn.innerText = "⚙️ Construir Turma na Planilha";
+        btn.disabled = false;
+    }
 }
 
 async function processarTurma(turma) {
@@ -210,23 +251,12 @@ async function processarTurma(turma) {
             if (nome) {
                 if (!mapaAlunos[nome]) mapaAlunos[nome] = { nome, status: "OK", prioridade: 0, detalhes: [] };
                 let perc = (faltas / carga) * 100;
-                
                 let sMat = "OK";
-                if (perc > 65) sMat = "Desistente";
-                else if (perc > 50) sMat = "Risco Alto";
-                else if (perc > 25) sMat = "Atenção"; // CORRIGIDO PARA ATENÇÃO
-                else if (perc >= 15) sMat = "Alerta";
-
-                if (sMat !== "OK") {
-                    mapaAlunos[nome].detalhes.push({ disciplina: disc, perc: perc.toFixed(0) + "%", faltas, status: sMat });
-                }
-
+                if (perc > 65) sMat = "Desistente"; else if (perc > 50) sMat = "Risco Alto"; else if (perc > 25) sMat = "Atenção"; else if (perc >= 15) sMat = "Alerta";
+                if (sMat !== "OK") mapaAlunos[nome].detalhes.push({ disciplina: disc, perc: perc.toFixed(0) + "%", faltas, status: sMat });
                 let pesos = {"OK": 0, "Alerta": 1, "Atenção": 2, "Risco Alto": 3, "Desistente": 4};
                 let p = pesos[sMat];
-                if (p > mapaAlunos[nome].prioridade) { 
-                    mapaAlunos[nome].prioridade = p; 
-                    mapaAlunos[nome].status = sMat; 
-                }
+                if (p > mapaAlunos[nome].prioridade) { mapaAlunos[nome].prioridade = p; mapaAlunos[nome].status = sMat; }
             }
         });
     });
@@ -237,43 +267,29 @@ async function processarTurma(turma) {
 
 function redefinirFiltro() { dadosFiltrados = [...dadosConsolidados]; document.getElementById("busca").value = ""; mostrar(); }
 function filtrar(tipo) { dadosFiltrados = dadosConsolidados.filter(a => a.status === tipo); mostrar(); }
-
 function mostrar() {
     const tbody = document.getElementById("tabela-corpo");
     tbody.innerHTML = "";
     let cont = { "OK": 0, "Alerta": 0, "Atenção": 0, "Risco Alto": 0, "Desistente": 0 };
     dadosConsolidados.forEach(a => cont[a.status]++);
-    
     document.getElementById("c-total").innerText = dadosConsolidados.length;
     document.getElementById("c-ok").innerText = cont["OK"];
     document.getElementById("c-alerta").innerText = cont["Alerta"]; 
-    document.getElementById("c-atencao").innerText = cont["Atenção"]; // CARD ATENÇÃO
+    document.getElementById("c-atencao").innerText = cont["Atenção"];
     document.getElementById("c-risco").innerText = cont["Risco Alto"];
     document.getElementById("c-critico").innerText = cont["Desistente"];
-    
     let cores = { "OK": "#2e7d32", "Alerta": "#fbc02d", "Atenção": "#f9a825", "Risco Alto": "#e67e22", "Desistente": "#c62828" };
-    
     dadosFiltrados.forEach((aluno, index) => {
         let hDisc = aluno.detalhes.map(d => {
             let tagClass = "tag-materia";
-            if (d.status === "Alerta") tagClass += " tag-alerta";
-            else if (d.status === "Atenção") tagClass += " tag-atencao";
-            else if (d.status !== "OK") tagClass += " tag-perigo";
+            if (d.status === "Alerta") tagClass += " tag-alerta"; else if (d.status === "Atenção") tagClass += " tag-atencao"; else if (d.status !== "OK") tagClass += " tag-perigo";
             return `<span class="${tagClass}">${d.disciplina}: ${d.faltas} (${d.perc})</span>`;
         }).join("") || "—";
-        
         let tr = document.createElement("tr");
-        tr.innerHTML = `
-            <td style="color:#888;">${index + 1}</td>
-            <td><b>${aluno.nome}</b></td>
-            <td><span class="badge" style="background:${cores[aluno.status]}">${aluno.status}</span></td>
-            <td>${hDisc}</td>
-            <td>${obterUltimaAcao(aluno.nome)}</td>
-            <td><button class="btn-hist" onclick="verHistorico('${aluno.nome}')">📜 Ver</button><button class="btn-acao" onclick="abrirModalAcao('${aluno.nome}')">➕ Ação</button></td>`;
+        tr.innerHTML = `<td style="color:#888;">${index + 1}</td><td><b>${aluno.nome}</b></td><td><span class="badge" style="background:${cores[aluno.status]}">${aluno.status}</span></td><td>${hDisc}</td><td>${obterUltimaAcao(aluno.nome)}</td><td><button class="btn-hist" onclick="verHistorico('${aluno.nome}')">📜 Ver</button><button class="btn-acao" onclick="abrirModalAcao('${aluno.nome}')">➕ Ação</button></td>`;
         tbody.appendChild(tr);
     });
 }
-
 function verificarDataImportacao(t) {
     let div = document.getElementById("dataAtualizacao"); div.style.display = "inline-block";
     let imp = historicoSistema.filter(h => h.turma === t);
@@ -282,62 +298,15 @@ function verificarDataImportacao(t) {
     div.innerHTML = (diff > 7 ? "⚠️ Dados velhos" : "✅ Dados OK") + ` (${dStr})`;
     div.style.color = diff > 7 ? "#c62828" : "#2e7d32";
 }
-function obterUltimaAcao(n) {
-    let a = historicoGlobal.filter(h => h.aluno === n);
-    return a.length === 0 ? "<span style='color:#ccc; font-size:11px'>Sem registro</span>" : `<b>${a[a.length-1].data}</b>`;
-}
-function verHistorico(n) {
-    document.getElementById("modalHist").style.display = "flex";
-    document.getElementById("modalTitulo").innerText = "Histórico: " + n;
-    let r = historicoGlobal.filter(h => h.aluno === n).reverse(), l = document.getElementById("modalLista");
-    l.innerHTML = r.length ? r.map(a => `<div class="hist-item"><span class="hist-data">📅 ${a.data}</span><div class="hist-texto">${a.acao}</div></div>`).join("") : "<p>Vazio</p>";
-}
+function obterUltimaAcao(n) { let a = historicoGlobal.filter(h => h.aluno === n); return a.length === 0 ? "<span style='color:#ccc; font-size:11px'>Sem registro</span>" : `<b>${a[a.length-1].data}</b>`; }
+function verHistorico(n) { document.getElementById("modalHist").style.display = "flex"; document.getElementById("modalTitulo").innerText = "Histórico: " + n; let r = historicoGlobal.filter(h => h.aluno === n).reverse(), l = document.getElementById("modalLista"); l.innerHTML = r.length ? r.map(a => `<div class="hist-item"><span class="hist-data">📅 ${a.data}</span><div class="hist-texto">${a.acao}</div></div>`).join("") : "<p>Vazio</p>"; }
 function abrirModalAcao(n) { alunoAcaoPendente = n; document.getElementById("acaoNomeAluno").innerText = n; document.getElementById("modalAcao").style.display = "flex"; }
-async function salvarAcaoPadronizada() {
-    let t = document.getElementById("selTipoAcao").value, d = document.getElementById("txtDetalheAcao").value;
-    if (!d.trim()) return alert("Preencha detalhes");
-    document.getElementById("modalAcao").style.display = "none";
-    try {
-        await fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ turma: document.getElementById("selTurma").value, aluno: alunoAcaoPendente, faltas: "-", data: new Date().toLocaleDateString('pt-BR'), acao: `[${t}] ${d}` }) });
-        alert("Salvo!"); carregarTudo(); 
-    } catch (e) { alert("Erro"); }
-}
+async function salvarAcaoPadronizada() { let t = document.getElementById("selTipoAcao").value, d = document.getElementById("txtDetalheAcao").value; if (!d.trim()) return alert("Preencha detalhes"); document.getElementById("modalAcao").style.display = "none"; try { await fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ turma: document.getElementById("selTurma").value, aluno: alunoAcaoPendente, faltas: "-", data: new Date().toLocaleDateString('pt-BR'), acao: `[${t}] ${d}` }) }); alert("Salvo!"); carregarTudo(); } catch (e) { alert("Erro"); } }
 function abrirImportacao() { document.getElementById("modalImport").style.display = "flex"; }
-function atualizarPrevia() {
-    let t = document.getElementById("txtImport").value.trim(), n = parseInt(document.getElementById("colNome").value)-1, f = parseInt(document.getElementById("colFaltas").value)-1, b = document.getElementById("tbodyPrevia");
-    dadosProntosParaSalvar = []; b.innerHTML = "";
-    if(!t) return;
-    t.split("\n").forEach(l => {
-        let c = l.split("\t");
-        if(c.length > Math.max(n, f)) {
-            let nm = c[n]?.trim(), flRaw = c[f]?.trim();
-            if(nm && nm.length > 2 && flRaw !== "" && flRaw !== undefined) {
-                dadosProntosParaSalvar.push([nm, flRaw.replace(/\D/g,"") || "0"]);
-                if(dadosProntosParaSalvar.length <= 5) b.innerHTML += `<div>${nm}</div>`;
-            }
-        }
-    });
-}
-async function executarImportacao() {
-    let a = document.getElementById("selImportMateria").value;
-    if(!a || !dadosProntosParaSalvar.length) return alert("Selecione matéria e cole dados");
-    let listaFinal = [["Aluno", "Faltas"], ...dadosProntosParaSalvar];
-    let inf = listaMateriasSimples.find(m => m.aba === a);
-    try {
-        await Promise.all([
-            fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ tipo: "IMPORTAR", abaDestino: a, lista: listaFinal }) }),
-            fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ turma: inf.turma, aluno: "[SISTEMA]", faltas: "-", data: new Date().toLocaleDateString('pt-BR'), acao: "Importação: " + inf.nome }) })
-        ]);
-        alert("Sucesso!"); fecharModal('modalImport'); carregarTudo(); 
-    } catch(e) { alert("Erro"); }
-}
+function atualizarPrevia() { let t = document.getElementById("txtImport").value.trim(), n = parseInt(document.getElementById("colNome").value)-1, f = parseInt(document.getElementById("colFaltas").value)-1, b = document.getElementById("tbodyPrevia"); dadosProntosParaSalvar = []; b.innerHTML = ""; if(!t) return; t.split("\n").forEach(l => { let c = l.split("\t"); if(c.length > Math.max(n, f)) { let nm = c[n]?.trim(), flRaw = c[f]?.trim(); if(nm && nm.length > 2 && flRaw !== "" && flRaw !== undefined) { dadosProntosParaSalvar.push([nm, flRaw.replace(/\D/g,"") || "0"]); if(dadosProntosParaSalvar.length <= 5) b.innerHTML += `<tr><td>${nm}</td><td>${flRaw.replace(/\D/g,"") || "0"}</td></tr>`; } } }); }
+async function executarImportacao() { let a = document.getElementById("selImportMateria").value; if(!a || !dadosProntosParaSalvar.length) return alert("Selecione matéria e cole dados"); let listaFinal = [["Aluno", "Faltas"], ...dadosProntosParaSalvar]; let inf = listaMateriasSimples.find(m => m.aba === a); try { await Promise.all([ fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ tipo: "IMPORTAR", abaDestino: a, lista: listaFinal }) }), fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ turma: inf.turma, aluno: "[SISTEMA]", faltas: "-", data: new Date().toLocaleDateString('pt-BR'), acao: "Importação: " + inf.nome }) }) ]); alert("Sucesso!"); fecharModal('modalImport'); carregarTudo(); } catch(e) { alert("Erro"); } }
 function fecharModal(id) { document.getElementById(id).style.display = "none"; }
-document.getElementById("busca").addEventListener("input", function() {
-    let t = this.value.toLowerCase();
-    dadosFiltrados = dadosConsolidados.filter(a => a.nome.toLowerCase().includes(t));
-    mostrar();
-});
+document.getElementById("busca").addEventListener("input", function() { let t = this.value.toLowerCase(); dadosFiltrados = dadosConsolidados.filter(a => a.nome.toLowerCase().includes(t)); mostrar(); });
 </script>
 </body>
 </html>
-
