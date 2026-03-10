@@ -312,7 +312,7 @@ async function salvarAcaoPadronizada() {
 
 function abrirImportacao() { document.getElementById("modalImport").style.display = "flex"; }
 
-// CORREÇÃO DEFINITIVA DO CONTADOR DE IMPORTAÇÃO
+// ATUALIZAÇÃO: Agora o sistema ignora alunos com o campo de faltas em BRANCO
 function atualizarPrevia() {
     let rawText = document.getElementById("txtImport").value;
     let colNome = parseInt(document.getElementById("colNome").value) - 1; 
@@ -327,43 +327,42 @@ function atualizarPrevia() {
         return;
     }
 
-    // Dividir linhas preservando tudo (não dar trim global ainda)
     let linhas = rawText.split(/\r?\n/);
 
     linhas.forEach(linha => {
-        if (!linha.trim()) return; // Pula linhas realmente vazias
+        if (!linha.trim()) return;
 
         let colunas = linha.split("\t");
         if (colunas.length > Math.max(colNome, colFaltas)) {
             let nm = colunas[colNome]?.trim();
-            let fl = colunas[colFaltas]?.trim().replace(/\D/g,"") || "0";
+            let faltasTexto = colunas[colFaltas]?.trim(); // Pega o texto original das faltas
             
-            // Critério: se tiver um nome com pelo menos 2 letras, é aluno
-            if (nm && nm.length >= 2) {
-                dadosProntosParaSalvar.push([nm, fl]);
+            // CONDIÇÃO DE FILTRO: Só prossegue se o campo de faltas NÃO estiver vazio
+            if (nm && nm.length >= 2 && faltasTexto !== "" && faltasTexto !== undefined) {
+                let numeroFaltas = faltasTexto.replace(/\D/g,"") || "0";
+                dadosProntosParaSalvar.push([nm, numeroFaltas]);
+                
                 if (dadosProntosParaSalvar.length <= 5) {
-                    tbody.innerHTML += `<tr><td>${nm}</td><td>${fl}</td></tr>`;
+                    tbody.innerHTML += `<tr><td>${nm}</td><td>${numeroFaltas}</td></tr>`;
                 }
             }
         }
     });
 
     if(dadosProntosParaSalvar.length === 0) {
-        tbody.innerHTML = "<tr><td colspan='2' style='text-align:center; color:red;'>Nenhum dado detectado. Verifique as colunas.</td></tr>";
+        tbody.innerHTML = "<tr><td colspan='2' style='text-align:center; color:red;'>Nenhum dado válido detectado (Campos de faltas vazios são ignorados).</td></tr>";
     }
 }
 
 async function executarImportacao() {
     let aba = document.getElementById("selImportMateria").value;
-    
-    // Recalcular no clique para garantir que a lista final é a mesma da prévia
     atualizarPrevia(); 
 
     if(!aba || !dadosProntosParaSalvar.length) {
-        return alert("Selecione a matéria e cole os dados corretamente.");
+        return alert("Selecione a matéria e cole dados válidos. Alunos com faltas em branco serão ignorados.");
     }
 
-    if(!confirm(`Confirmar importação de ${dadosProntosParaSalvar.length} alunos?`)) return;
+    if(!confirm(`Confirmar importação de ${dadosProntosParaSalvar.length} alunos? Alunos desistentes (faltas em branco) não serão importados.`)) return;
     
     let inf = listaMateriasSimples.find(m => m.aba === aba);
     
@@ -372,7 +371,7 @@ async function executarImportacao() {
             fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ tipo: "IMPORTAR", abaDestino: aba, lista: dadosProntosParaSalvar }) }),
             fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ turma: inf.turma, aluno: "[SISTEMA]", faltas: "-", data: new Date().toLocaleDateString('pt-BR'), acao: "Importação: " + inf.nome }) })
         ]);
-        alert(`Sucesso! ${dadosProntosParaSalvar.length} alunos foram salvos na planilha.`); 
+        alert(`Sucesso! ${dadosProntosParaSalvar.length} alunos ativos importados.`); 
         fecharModal('modalImport'); 
         carregarTudo(); 
     } catch(e) { 
