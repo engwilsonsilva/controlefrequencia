@@ -6,21 +6,21 @@
     <style>
         /* --- ESTILOS VISUAIS (MANTIDOS 100%) --- */
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; padding: 20px; color: #333; }
-        .container { max-width: 1250px; margin: auto; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .container { max-width: 1300px; margin: auto; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 15px; }
         h2 { margin: 0; color: #2c3e50; }
         select { padding: 10px; font-size: 14px; border-radius: 5px; min-width: 200px; border: 1px solid #ccc; }
-        .cards { display: flex; gap: 15px; margin-bottom: 25px; }
+        .cards { display: flex; gap: 10px; margin-bottom: 25px; }
         .card { flex: 1; padding: 15px; text-align: center; border-radius: 8px; background: #fff; border: 1px solid #ddd; border-top: 4px solid #ccc; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .card h3 { margin: 0; font-size: 28px; }
-        .card p { margin: 5px 0 0; font-size: 12px; text-transform: uppercase; color: #666; }
+        .card p { margin: 5px 0 0; font-size: 11px; text-transform: uppercase; color: #666; font-weight: bold; }
         .ok { border-color: #2e7d32; color: #2e7d32; }
         .atencao { border-color: #f9a825; color: #f9a825; }
         .risco { border-color: #e67e22; color: #e67e22; }
         .critico { border-color: #c62828; color: #c62828; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th { background: #f8f9fa; text-align: left; padding: 12px; border-bottom: 2px solid #ddd; color: #555; }
-        td { padding: 10px; border-bottom: 1px solid #eee; vertical-align: middle; }
+        th { background: #f8f9fa; text-align: left; padding: 12px; border-bottom: 2px solid #ddd; color: #555; font-size: 13px; }
+        td { padding: 10px; border-bottom: 1px solid #eee; vertical-align: middle; font-size: 14px; }
         .badge { padding: 5px 10px; border-radius: 15px; color: white; font-weight: bold; font-size: 11px; text-transform: uppercase; }
         .tag-materia { display: inline-block; background: #f1f3f5; color: #495057; padding: 3px 6px; border-radius: 4px; font-size: 11px; margin: 2px; border: 1px solid #dee2e6; }
         .tag-materia.alert { background: #ffebee; color: #c62828; border-color: #ffcdd2; font-weight: bold; }
@@ -29,36 +29,17 @@
         .btn-acao { background: #2196F3; }
         .btn-print { background: #555; padding: 10px 20px; font-size: 14px; }
         .btn-import { background: #9c27b0; padding: 10px 20px; font-size: 14px; margin-right: 10px; }
-        button:hover { opacity: 0.9; }
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
         .modal-content { background: white; width: 600px; max-width: 95%; padding: 25px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); position: relative; max-height: 90vh; overflow-y: auto; }
         .close-btn { position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; color: #999; }
-        .hist-lista { max-height: 400px; overflow-y: auto; margin-top: 15px; }
-        .hist-item { border-bottom: 1px solid #eee; padding: 10px 0; }
-        .hist-data { font-size: 12px; font-weight: bold; color: #666; display: block; margin-bottom: 4px; }
-        .hist-texto { font-size: 14px; color: #333; line-height: 1.4; }
         textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; margin-top: 10px; box-sizing: border-box; }
-        #txtImport { height: 100px; font-family: monospace; font-size: 11px; white-space: pre; overflow: scroll; }
-        #txtDetalheAcao { height: 80px; font-family: inherit; font-size: 14px; resize: none; }
-        .config-colunas { display: flex; gap: 10px; margin-top: 10px; background: #f9f9f9; padding: 10px; border-radius: 5px; border: 1px solid #eee; }
-        .config-colunas div { flex: 1; }
-        .config-colunas label, .campo-label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #555; }
-        .config-colunas input { width: 100%; padding: 5px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
         .previa-box { margin-top: 15px; border: 1px solid #eee; border-radius: 5px; padding: 10px; background: #fff; }
-        .previa-titulo { font-size: 12px; font-weight: bold; color: #9c27b0; margin-bottom: 5px; }
-        .tabela-previa { width: 100%; font-size: 11px; border-collapse: collapse; }
-        .tabela-previa th, .tabela-previa td { border: 1px solid #ddd; padding: 4px; text-align: left; }
-        .tabela-previa th { background: #f0f0f0; }
         .info-atualizacao { font-size: 12px; font-weight: bold; margin-top: 5px; display: inline-block; padding: 3px 8px; border-radius: 4px; background: #f1f3f5; }
         @media print {
             .cards, .top-bar button, select, label, input, .btn-acao, .btn-hist, .btn-import, .info-atualizacao { display: none !important; }
             .top-bar { justify-content: center; border-bottom: 2px solid #000; }
-            h2 { font-size: 18px; color: #000; }
             table { font-size: 10px; width: 100%; }
             th, td { border: 1px solid #000; padding: 4px; color: #000; }
-            th { background-color: #eee !important; font-weight: bold; }
-            .badge { border: 1px solid #000; color: #000 !important; background: none !important; }
-            .tag-materia { border: 1px solid #999; color: #000 !important; }
         }
     </style>
 </head>
@@ -89,12 +70,12 @@
         <div class="card critico" onclick="filtrar('Desistente')"><h3 id="c-critico">0</h3><p>Desistentes (>65%)</p></div>
     </div>
 
-    <input id="busca" placeholder="🔍 Buscar aluno..." style="width: 100%; padding: 12px; margin-bottom: 20px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 5px;">
+    <input id="busca" placeholder="🔍 Buscar aluno por nome..." style="width: 100%; padding: 12px; margin-bottom: 20px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 5px;">
 
     <table>
         <thead>
             <tr>
-                <th>Aluno</th>
+                <th style="width: 40px;">#</th> <th>Aluno</th>
                 <th>Situação Geral</th>
                 <th>Disciplinas Críticas (Faltas | %)</th>
                 <th>Última Ação</th>
@@ -111,7 +92,7 @@
     <div class="modal-content">
         <span class="close-btn" onclick="fecharModal('modalHist')">&times;</span>
         <h3 id="modalTitulo">Histórico</h3>
-        <div id="modalLista" class="hist-lista">Carregando...</div>
+        <div id="modalLista" style="max-height: 400px; overflow-y: auto; margin-top: 15px;">Carregando...</div>
     </div>
 </div>
 
@@ -120,7 +101,7 @@
         <span class="close-btn" onclick="fecharModal('modalAcao')">&times;</span>
         <h3>Registrar Ação</h3>
         <p id="acaoNomeAluno" style="font-weight:bold; color: #2196F3; font-size: 16px; margin-bottom: 15px;"></p>
-        <label class="campo-label">Tipo de Contato:</label>
+        <label style="font-size:12px; font-weight:bold; color:#555;">Tipo de Contato:</label>
         <select id="selTipoAcao" style="width:100%; padding:10px; margin-bottom: 15px;">
             <option value="📞 Ligação Telefônica">📞 Ligação Telefônica</option>
             <option value="📱 Mensagem WhatsApp">📱 Mensagem WhatsApp</option>
@@ -129,8 +110,8 @@
             <option value="⚠️ Conselho Tutelar">⚠️ Encaminhado ao Conselho Tutelar</option>
             <option value="📝 Outro">📝 Outro</option>
         </select>
-        <label class="campo-label">Detalhes / Retorno:</label>
-        <textarea id="txtDetalheAcao" placeholder="Escreva aqui..."></textarea>
+        <label style="font-size:12px; font-weight:bold; color:#555;">Detalhes:</label>
+        <textarea id="txtDetalheAcao" placeholder="Escreva o retorno da conversa..."></textarea>
         <button onclick="salvarAcaoPadronizada()" style="background:#2196F3; width:100%; padding:12px; margin-top:15px; font-size:16px; color: white; border: none; border-radius: 5px; cursor: pointer;">💾 Salvar</button>
     </div>
 </div>
@@ -140,18 +121,18 @@
         <span class="close-btn" onclick="fecharModal('modalImport')">&times;</span>
         <h3>Importar Frequência</h3>
         <label><b>1. Para qual matéria?</b></label>
-        <select id="selImportMateria" style="width:100%; margin: 5px 0 10px; padding: 8px;"></select>
-        <label><b>2. Cole os dados copiados aqui:</b></label>
-        <textarea id="txtImport" placeholder="Cole aqui..." oninput="atualizarPrevia()"></textarea>
-        <div class="config-colunas">
-            <div><label>Coluna do Nome</label><input type="number" id="colNome" value="2" min="1" onchange="atualizarPrevia()"></div>
-            <div><label>Coluna de Faltas</label><input type="number" id="colFaltas" value="5" min="1" onchange="atualizarPrevia()"></div>
+        <select id="selImportMateria" style="width:100%; margin: 10px 0; padding: 8px;"></select>
+        <label><b>2. Cole os dados copiados:</b></label>
+        <textarea id="txtImport" style="height:100px; font-family:monospace;" placeholder="Cole aqui..." oninput="atualizarPrevia()"></textarea>
+        <div style="display:flex; gap:10px; margin-top:10px;">
+            <div style="flex:1;"><label style="font-size:11px;">Coluna Nome (Nº)</label><input type="number" id="colNome" value="2" style="width:100%; padding:5px;" onchange="atualizarPrevia()"></div>
+            <div style="flex:1;"><label style="font-size:11px;">Coluna Faltas (Nº)</label><input type="number" id="colFaltas" value="5" style="width:100%; padding:5px;" onchange="atualizarPrevia()"></div>
         </div>
         <div class="previa-box">
-            <div class="previa-titulo">👁️ Pré-visualização:</div>
-            <table class="tabela-previa"><thead><tr><th>Nome</th><th>Faltas</th></tr></thead><tbody id="tbodyPrevia"><tr><td colspan="2" style="text-align:center;">Aguardando...</td></tr></tbody></table>
+            <div style="font-size:12px; font-weight:bold; color:#9c27b0; margin-bottom:5px;">👁️ Prévia (Ativos Detectados):</div>
+            <table style="width:100%; font-size:11px; border-collapse: collapse;"><tbody id="tbodyPrevia"></tbody></table>
         </div>
-        <button onclick="executarImportacao()" style="background:#9c27b0; width:100%; padding:12px; margin-top:15px; font-size:16px; color: white; border: none; border-radius: 5px; cursor: pointer;">💾 Salvar</button>
+        <button onclick="executarImportacao()" style="background:#9c27b0; width:100%; padding:12px; margin-top:15px; color:white;">💾 Salvar na Planilha</button>
     </div>
 </div>
 
@@ -161,22 +142,14 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxYJlXYdZID3PUkDWnYD
 const CONFIG_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=Config`;
 const HIST_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=Historico`;
 
-let historicoGlobal = [];
-let historicoSistema = [];
-let estruturaEscola = {}; 
-let dadosConsolidados = []; 
-let dadosFiltrados = [];    
-let listaMateriasSimples = []; 
-let alunoAcaoPendente = ""; 
+let historicoGlobal = [], historicoSistema = [], estruturaEscola = {}, dadosConsolidados = [], dadosFiltrados = [], listaMateriasSimples = [], alunoAcaoPendente = "";
 
 window.onload = carregarTudo;
 
 function carregarTudo() {
     fetch(`${HIST_URL}&t=${Date.now()}`).then(res => res.text()).then(data => {
         const json = JSON.parse(data.substring(47).slice(0, -2));
-        let hGeral = json.table.rows.map(r => ({
-            turma: r.c[0]?.v, aluno: r.c[1]?.v, data: r.c[3]?.f || r.c[3]?.v, acao: r.c[4]?.v
-        })).filter(h => h.aluno);
+        let hGeral = json.table.rows.map(r => ({ turma: r.c[0]?.v, aluno: r.c[1]?.v, data: r.c[3]?.f || r.c[3]?.v, acao: r.c[4]?.v })).filter(h => h.aluno);
         historicoGlobal = hGeral.filter(h => h.aluno !== "[SISTEMA]");
         historicoSistema = hGeral.filter(h => h.aluno === "[SISTEMA]");
         carregarConfig();
@@ -186,8 +159,7 @@ function carregarTudo() {
 function carregarConfig() {
     fetch(`${CONFIG_URL}&t=${Date.now()}`).then(res => res.text()).then(data => {
         const json = JSON.parse(data.substring(47).slice(0, -2));
-        const select = document.getElementById("selTurma");
-        const sImport = document.getElementById("selImportMateria");
+        const select = document.getElementById("selTurma"), sImport = document.getElementById("selImportMateria");
         select.innerHTML = "<option value=''>Selecione a turma...</option>";
         sImport.innerHTML = "<option value=''>Selecione a matéria...</option>";
         estruturaEscola = {}; listaMateriasSimples = [];
@@ -211,17 +183,16 @@ function carregarConfig() {
 }
 
 async function processarTurma(turma) {
-    if (!turma) { document.getElementById("dataAtualizacao").style.display = "none"; return; }
+    if (!turma) return;
     document.getElementById("loading").style.display = "block";
     verificarDataImportacao(turma);
-    let mapaAlunos = {};
-    let materias = estruturaEscola[turma];
+    let mapaAlunos = {}, materias = estruturaEscola[turma];
     const promessas = materias.map(mat => {
         return fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(mat.aba)}&t=${Date.now()}`)
             .then(res => res.text()).then(txt => {
                 try { 
-                    const rawData = JSON.parse(txt.substring(47).slice(0,-2)).table.rows;
-                    return { mat, linhas: rawData.slice(1) }; 
+                    const raw = JSON.parse(txt.substring(47).slice(0,-2)).table.rows;
+                    return { mat, linhas: raw.slice(1) }; // PULA CABEÇALHO NA LEITURA
                 } catch(e) { return { mat, linhas: [] }; }
             });
     });
@@ -245,34 +216,30 @@ async function processarTurma(turma) {
     document.getElementById("loading").style.display = "none";
 }
 
-function redefinirFiltro() {
-    dadosFiltrados = [...dadosConsolidados];
-    document.getElementById("busca").value = "";
-    mostrar();
-}
-
-function filtrar(tipo) {
-    dadosFiltrados = dadosConsolidados.filter(a => a.status === tipo);
-    mostrar();
-}
+function redefinirFiltro() { dadosFiltrados = [...dadosConsolidados]; document.getElementById("busca").value = ""; mostrar(); }
+function filtrar(tipo) { dadosFiltrados = dadosConsolidados.filter(a => a.status === tipo); mostrar(); }
 
 function mostrar() {
     const tbody = document.getElementById("tabela-corpo");
     tbody.innerHTML = "";
     let cont = { "OK": 0, "Atenção": 0, "Risco Alto": 0, "Desistente": 0 };
-    dadosConsolidados.forEach(aluno => {
-        cont[aluno.status]++;
-    });
+    dadosConsolidados.forEach(a => cont[a.status]++);
     document.getElementById("c-total").innerText = dadosConsolidados.length;
     document.getElementById("c-ok").innerText = cont["OK"];
     document.getElementById("c-atencao").innerText = cont["Atenção"];
     document.getElementById("c-risco").innerText = cont["Risco Alto"];
     document.getElementById("c-critico").innerText = cont["Desistente"];
     let cores = { "OK": "#2e7d32", "Atenção": "#f9a825", "Risco Alto": "#e67e22", "Desistente": "#c62828" };
-    dadosFiltrados.forEach(aluno => {
-        let hDisc = aluno.detalhes.map(d => `<span class="tag-materia ${d.status==='Desistente'||d.status==='Risco Alto'?'alert':''}">${d.disciplina}: ${d.faltas} (${d.perc})</span>`).join("") || "<span style='color:#ccc; font-size:11px'>—</span>";
+    
+    dadosFiltrados.forEach((aluno, index) => { // ADICIONADO O INDEX PARA NUMERAÇÃO
+        let hDisc = aluno.detalhes.map(d => `<span class="tag-materia ${d.status==='Desistente'||d.status==='Risco Alto'?'alert':''}">${d.disciplina}: ${d.faltas} (${d.perc})</span>`).join("") || "—";
         let tr = document.createElement("tr");
-        tr.innerHTML = `<td><b>${aluno.nome}</b></td><td><span class="badge" style="background:${cores[aluno.status]}">${aluno.status}</span></td><td>${hDisc}</td><td>${obterUltimaAcao(aluno.nome)}</td><td><button class="btn-hist" onclick="verHistorico('${aluno.nome}')">📜 Ver</button><button class="btn-acao" onclick="abrirModalAcao('${aluno.nome}')">➕ Ação</button></td>`;
+        tr.innerHTML = `
+            <td style="color:#888;">${index + 1}</td> <td><b>${aluno.nome}</b></td>
+            <td><span class="badge" style="background:${cores[aluno.status]}">${aluno.status}</span></td>
+            <td>${hDisc}</td>
+            <td>${obterUltimaAcao(aluno.nome)}</td>
+            <td><button class="btn-hist" onclick="verHistorico('${aluno.nome}')">📜 Ver</button><button class="btn-acao" onclick="abrirModalAcao('${aluno.nome}')">➕ Ação</button></td>`;
         tbody.appendChild(tr);
     });
 }
@@ -280,7 +247,7 @@ function mostrar() {
 function verificarDataImportacao(t) {
     let div = document.getElementById("dataAtualizacao"); div.style.display = "inline-block";
     let imp = historicoSistema.filter(h => h.turma === t);
-    if (imp.length === 0) { div.innerHTML = "⚠️ Sem registo recente"; div.style.color = "#c62828"; div.style.background = "#ffebee"; return; }
+    if (imp.length === 0) { div.innerHTML = "⚠️ Sem registro recente"; div.style.color = "#c62828"; div.style.background = "#ffebee"; return; }
     let dStr = imp[imp.length - 1].data, p = dStr.split('/'), dI = new Date(p[2], p[1]-1, p[0]), diff = (new Date() - dI) / 86400000;
     div.innerHTML = (diff > 7 ? "⚠️ Dados desatualizados" : "✅ Dados atualizados") + ` (${dStr})`;
     div.style.color = diff > 7 ? "#c62828" : "#2e7d32"; div.style.background = diff > 7 ? "#ffebee" : "#e8f5e9";
@@ -288,14 +255,14 @@ function verificarDataImportacao(t) {
 
 function obterUltimaAcao(n) {
     let a = historicoGlobal.filter(h => h.aluno === n);
-    return a.length === 0 ? "<span style='color:#ccc; font-size:11px'>Sem registo</span>" : `<b>${a[a.length-1].data}</b>`;
+    return a.length === 0 ? "<span style='color:#ccc; font-size:11px'>Sem registro</span>" : `<b>${a[a.length-1].data}</b>`;
 }
 
 function verHistorico(n) {
     document.getElementById("modalHist").style.display = "flex";
     document.getElementById("modalTitulo").innerText = "Histórico: " + n;
     let r = historicoGlobal.filter(h => h.aluno === n).reverse(), l = document.getElementById("modalLista");
-    l.innerHTML = r.length ? r.map(a => `<div class="hist-item"><span class="hist-data">📅 ${a.data}</span><div class="hist-texto">${a.acao}</div></div>`).join("") : "<p>Nenhum registo.</p>";
+    l.innerHTML = r.length ? r.map(a => `<div class="hist-item"><span class="hist-data">📅 ${a.data}</span><div class="hist-texto">${a.acao}</div></div>`).join("") : "<p>Nenhum registro.</p>";
 }
 
 function abrirModalAcao(n) { alunoAcaoPendente = n; document.getElementById("acaoNomeAluno").innerText = "Aluno: " + n; document.getElementById("modalAcao").style.display = "flex"; }
@@ -311,72 +278,38 @@ async function salvarAcaoPadronizada() {
 }
 
 function abrirImportacao() { document.getElementById("modalImport").style.display = "flex"; }
-
-// ATUALIZAÇÃO: Agora o sistema ignora alunos com o campo de faltas em BRANCO
 function atualizarPrevia() {
-    let rawText = document.getElementById("txtImport").value;
-    let colNome = parseInt(document.getElementById("colNome").value) - 1; 
-    let colFaltas = parseInt(document.getElementById("colFaltas").value) - 1;
-    let tbody = document.getElementById("tbodyPrevia");
-    
-    dadosProntosParaSalvar = []; 
-    tbody.innerHTML = "";
-    
-    if(!rawText.trim()) {
-        tbody.innerHTML = "<tr><td colspan='2' style='text-align:center;'>Aguardando dados...</td></tr>";
-        return;
-    }
-
-    let linhas = rawText.split(/\r?\n/);
-
-    linhas.forEach(linha => {
-        if (!linha.trim()) return;
-
-        let colunas = linha.split("\t");
-        if (colunas.length > Math.max(colNome, colFaltas)) {
-            let nm = colunas[colNome]?.trim();
-            let faltasTexto = colunas[colFaltas]?.trim(); // Pega o texto original das faltas
-            
-            // CONDIÇÃO DE FILTRO: Só prossegue se o campo de faltas NÃO estiver vazio
-            if (nm && nm.length >= 2 && faltasTexto !== "" && faltasTexto !== undefined) {
-                let numeroFaltas = faltasTexto.replace(/\D/g,"") || "0";
-                dadosProntosParaSalvar.push([nm, numeroFaltas]);
-                
-                if (dadosProntosParaSalvar.length <= 5) {
-                    tbody.innerHTML += `<tr><td>${nm}</td><td>${numeroFaltas}</td></tr>`;
-                }
+    let t = document.getElementById("txtImport").value.trim(), n = parseInt(document.getElementById("colNome").value)-1, f = parseInt(document.getElementById("colFaltas").value)-1, b = document.getElementById("tbodyPrevia");
+    dadosProntosParaSalvar = []; b.innerHTML = "";
+    if(!t) return;
+    t.split("\n").forEach(l => {
+        let c = l.split("\t");
+        if(c.length > Math.max(n, f)) {
+            let nm = c[n]?.trim(), flRaw = c[f]?.trim();
+            if(nm && nm.length > 2 && flRaw !== "" && flRaw !== undefined) {
+                let fl = flRaw.replace(/\D/g,"") || "0";
+                dadosProntosParaSalvar.push([nm, fl]);
+                if(dadosProntosParaSalvar.length <= 5) b.innerHTML += `<tr><td>${nm}</td><td>${fl}</td></tr>`;
             }
         }
     });
-
-    if(dadosProntosParaSalvar.length === 0) {
-        tbody.innerHTML = "<tr><td colspan='2' style='text-align:center; color:red;'>Nenhum dado válido detectado (Campos de faltas vazios são ignorados).</td></tr>";
-    }
 }
-
 async function executarImportacao() {
-    let aba = document.getElementById("selImportMateria").value;
-    atualizarPrevia(); 
-
-    if(!aba || !dadosProntosParaSalvar.length) {
-        return alert("Selecione a matéria e cole dados válidos. Alunos com faltas em branco serão ignorados.");
-    }
-
-    if(!confirm(`Confirmar importação de ${dadosProntosParaSalvar.length} alunos? Alunos desistentes (faltas em branco) não serão importados.`)) return;
+    let a = document.getElementById("selImportMateria").value;
+    if(!a || !dadosProntosParaSalvar.length) return alert("Selecione a matéria e cole dados válidos.");
+    if(!confirm(`Importar ${dadosProntosParaSalvar.length} alunos?`)) return;
     
-    let inf = listaMateriasSimples.find(m => m.aba === aba);
+    // --- IMPORTANTE: ADICIONA O CABEÇALHO ANTES DE ENVIAR ---
+    let listaFinal = [["Aluno", "Faltas"], ...dadosProntosParaSalvar];
+    let inf = listaMateriasSimples.find(m => m.aba === a);
     
     try {
         await Promise.all([
-            fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ tipo: "IMPORTAR", abaDestino: aba, lista: dadosProntosParaSalvar }) }),
+            fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ tipo: "IMPORTAR", abaDestino: a, lista: listaFinal }) }),
             fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ turma: inf.turma, aluno: "[SISTEMA]", faltas: "-", data: new Date().toLocaleDateString('pt-BR'), acao: "Importação: " + inf.nome }) })
         ]);
-        alert(`Sucesso! ${dadosProntosParaSalvar.length} alunos ativos importados.`); 
-        fecharModal('modalImport'); 
-        carregarTudo(); 
-    } catch(e) { 
-        alert("Erro na comunicação com a planilha."); 
-    }
+        alert(`Sucesso! ${dadosProntosParaSalvar.length} alunos importados.`); fecharModal('modalImport'); carregarTudo(); 
+    } catch(e) { alert("Erro."); }
 }
 
 function fecharModal(id) { document.getElementById(id).style.display = "none"; }
