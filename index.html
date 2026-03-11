@@ -81,17 +81,14 @@
     <div class="modal-content" style="max-width: 400px;">
         <span class="close-btn" onclick="fecharModal('modalNovaTurma')">&times;</span>
         <h3>🆕 Gerar Nova Turma</h3>
-        
         <label style="font-size:12px; font-weight:bold; color:#555;">Nome ou Número da Turma:</label>
         <input type="text" id="txtNovaTurmaNum" placeholder="Ex: 11 ou 11A" class="input-modal">
-        
         <label style="font-size:12px; font-weight:bold; color:#555;">Modalidade:</label>
         <select id="selNovaTurmaMod" class="input-modal" onchange="verificarEAD()">
             <option value="PRESENCIAL">Presencial</option>
             <option value="EAD (Semana)">EAD (Semana)</option>
             <option value="EAD (Sábado)">EAD (Sábado)</option>
         </select>
-        
         <label style="font-size:12px; font-weight:bold; color:#555;">Curso:</label>
         <select id="selNovaTurmaCurso" class="input-modal" onchange="verificarEAD()">
             <option value="">Carregando cursos...</option>
@@ -108,6 +105,7 @@
 
 <div id="modalHist" class="modal-overlay"><div class="modal-content"><span class="close-btn" onclick="fecharModal('modalHist')">&times;</span><h3 id="modalTitulo">Histórico</h3><div id="modalLista" style="max-height: 400px; overflow-y: auto; margin-top: 15px;">Carregando...</div></div></div>
 <div id="modalAcao" class="modal-overlay"><div class="modal-content" style="max-width: 450px;"><span class="close-btn" onclick="fecharModal('modalAcao')">&times;</span><h3>Registrar Ação</h3><p id="acaoNomeAluno" style="font-weight:bold; color: #2196F3; font-size: 16px; margin-bottom: 15px;"></p><select id="selTipoAcao" class="input-modal"><option value="📞 Ligação Telefônica">📞 Ligação Telefônica</option><option value="📱 Mensagem WhatsApp">📱 Mensagem WhatsApp</option><option value="🤝 Reunião Presencial">🤝 Reunião Presencial</option><option value="🏠 Visita Domiciliar">🏠 Visita Domiciliar</option><option value="⚠️ Conselho Tutelar">⚠️ Encaminhado ao Conselho Tutelar</option><option value="📝 Outro">📝 Outro</option></select><textarea id="txtDetalheAcao" placeholder="Escreva o retorno da conversa..." style="height:80px;" class="input-modal"></textarea><button onclick="salvarAcaoPadronizada()" style="background:#2196F3; width:100%; padding:12px; margin-top:15px; color: white; border-radius: 5px; border: none;">💾 Salvar</button></div></div>
+
 <div id="modalImport" class="modal-overlay">
     <div class="modal-content">
         <span class="close-btn" onclick="fecharModal('modalImport')">&times;</span>
@@ -115,8 +113,8 @@
         <select id="selImportMateria" class="input-modal"></select>
         <textarea id="txtImport" style="height:100px; font-family:monospace;" placeholder="Cole aqui..." oninput="atualizarPrevia()" class="input-modal"></textarea>
         <div style="display:flex; gap:10px;">
-            <div style="flex:1;"><label style="font-size:11px;">Coluna Nome</label><input type="number" id="colNome" value="2" class="input-modal" onchange="atualizarPrevia()"></div>
-            <div style="flex:1;"><label style="font-size:11px;">Coluna Faltas</label><input type="number" id="colFaltas" value="5" class="input-modal" onchange="atualizarPrevia()"></div>
+            <div style="flex:1;"><label style="font-size:11px;">Coluna Nome (Nº)</label><input type="number" id="colNome" value="2" class="input-modal" onchange="atualizarPrevia()"></div>
+            <div style="flex:1;"><label style="font-size:11px;">Coluna Faltas (Nº)</label><input type="number" id="colFaltas" value="5" class="input-modal" onchange="atualizarPrevia()"></div>
         </div>
         <div class="previa-box">
             <div style="font-size:12px; font-weight:bold; color:#9c27b0; margin-bottom:5px;">👁️ Prévia (Ativos Detectados):</div>
@@ -124,7 +122,7 @@
                 <tbody id="tbodyPrevia"><tr><td style="text-align:center; color:#888;">Aguardando dados...</td></tr></tbody>
             </table>
         </div>
-        <button id="btnSalvarImportacao" onclick="executarImportacao()" style="background:#9c27b0; width:100%; padding:12px; margin-top:15px; color:white; border:none; border-radius:5px;">💾 Salvar no Banco de Dados</button>
+        <button id="btnSalvarImportacao" onclick="executarImportacao()" style="background:#9c27b0; width:100%; padding:12px; margin-top:15px; color:white; border:none; border-radius:5px; cursor:pointer;">💾 Salvar no Banco de Dados</button>
     </div>
 </div>
 
@@ -136,8 +134,7 @@ const HIST_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx
 const MATRIZES_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&headers=0&sheet=Matrizes`;
 const BANCO_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&headers=0&sheet=BD_Frequencias`; 
 
-// Variável dadosProntosParaSalvar adicionada corretamente
-let historicoGlobal = [], historicoSistema = [], estruturaEscola = [], dadosConsolidados = [], dadosFiltrados = [], listaMateriasSimples = [], alunoAcaoPendente = "", dadosProntosParaSalvar = [];
+let historicoGlobal = [], historicoSistema = [], estruturaEscola = {}, dadosConsolidados = [], dadosFiltrados = [], listaMateriasSimples = [], alunoAcaoPendente = "", dadosProntosParaSalvar = [];
 let matrizesGlobais = []; 
 
 window.onload = carregarTudo;
@@ -351,61 +348,62 @@ function abrirImportacao() {
 }
 
 // ----------------------------------------------------
-// PRÉVIA RESTAURADA E CORRIGIDA
+// A FUNÇÃO EXATA QUE FUNCIONAVA NA PERFEIÇÃO
 // ----------------------------------------------------
 function atualizarPrevia() {
-    let rawText = document.getElementById("txtImport").value;
-    let colNome = parseInt(document.getElementById("colNome").value) - 1; 
-    let colFaltas = parseInt(document.getElementById("colFaltas").value) - 1;
-    let tbody = document.getElementById("tbodyPrevia");
+    let t = document.getElementById("txtImport").value.trim();
+    let n = parseInt(document.getElementById("colNome").value) - 1;
+    let f = parseInt(document.getElementById("colFaltas").value) - 1;
+    let b = document.getElementById("tbodyPrevia");
     
     dadosProntosParaSalvar = []; 
-    tbody.innerHTML = "";
+    b.innerHTML = "";
     
-    if(!rawText.trim()) {
-        tbody.innerHTML = "<tr><td colspan='2' style='text-align:center;'>Aguardando dados...</td></tr>";
+    if(!t) {
+        b.innerHTML = "<tr><td colspan='2' style='text-align:center; color:#888;'>Aguardando dados...</td></tr>";
         return;
     }
 
-    let linhas = rawText.split(/\r?\n/);
-
-    linhas.forEach(linha => {
-        if (!linha.trim()) return;
-
-        let colunas = linha.split("\t");
-        if (colunas.length > Math.max(colNome, colFaltas)) {
-            let nm = colunas[colNome]?.trim();
-            let faltasTexto = colunas[colFaltas]?.trim();
+    t.split("\n").forEach(l => {
+        let c = l.split("\t");
+        if(c.length > Math.max(n, f)) {
+            let nm = c[n]?.trim();
+            let flRaw = c[f]?.trim();
             
-            if (nm && nm.length >= 2 && faltasTexto !== "" && faltasTexto !== undefined) {
-                let numeroFaltas = faltasTexto.replace(/\D/g,"") || "0";
-                dadosProntosParaSalvar.push([nm, numeroFaltas]);
+            if(nm && nm.length > 2 && flRaw !== "" && flRaw !== undefined) {
+                // Previne acidentalmente a cópia do cabeçalho
+                if(nm.toLowerCase() === "aluno" || nm.toLowerCase() === "nome") return;
+
+                let faltas = flRaw.replace(/\D/g,"") || "0";
+                dadosProntosParaSalvar.push([nm, faltas]);
                 
-                if (dadosProntosParaSalvar.length <= 5) {
-                    tbody.innerHTML += `<tr><td style="border:1px solid #ddd; padding:4px;">${nm}</td><td style="border:1px solid #ddd; padding:4px;">${numeroFaltas}</td></tr>`;
+                if(dadosProntosParaSalvar.length <= 5) {
+                    b.innerHTML += `<tr><td style="border:1px solid #ddd; padding:4px;">${nm}</td><td style="border:1px solid #ddd; padding:4px; text-align:center;">${faltas}</td></tr>`;
                 }
             }
         }
     });
 
     if(dadosProntosParaSalvar.length === 0) {
-        tbody.innerHTML = "<tr><td colspan='2' style='text-align:center; color:red;'>Nenhum dado válido detectado.</td></tr>";
+        b.innerHTML = `<tr><td colspan='2' style='text-align:center; color:red; padding:10px;'><b>Nenhum dado válido detetado.</b></td></tr>`;
+    } else {
+        b.innerHTML += `<tr><td colspan='2' style='text-align:center; background:#e8f5e9; color:#2e7d32; font-weight:bold; padding:5px;'>✅ ${dadosProntosParaSalvar.length} alunos prontos para importar</td></tr>`;
     }
 }
 
 async function executarImportacao() { 
     let abaVirtualId = document.getElementById("selImportMateria").value; 
     
-    atualizarPrevia(); // Força a atualização da lista antes de salvar
+    atualizarPrevia(); 
 
     if(!abaVirtualId || !dadosProntosParaSalvar.length) {
-        return alert("Selecione matéria e cole dados válidos."); 
+        return alert("Selecione a matéria e cole dados válidos."); 
     }
     
     let inf = listaMateriasSimples.find(m => m.aba === abaVirtualId); 
     let btn = document.getElementById("btnSalvarImportacao");
     let txtOriginal = btn.innerText;
-    btn.innerText = "⏳ Salvando dados...";
+    btn.innerText = "⏳ A guardar dados...";
     btn.disabled = true;
 
     try { 
@@ -415,10 +413,10 @@ async function executarImportacao() {
         ]); 
         alert(`Sucesso! ${dadosProntosParaSalvar.length} alunos guardados no Banco de Dados.`); 
         fecharModal('modalImport'); 
-        document.getElementById("txtImport").value = ""; // Limpa a caixa
+        document.getElementById("txtImport").value = "";
         carregarTudo(); 
     } catch(e) { 
-        alert("Erro ao salvar."); 
+        alert("Erro ao guardar."); 
     } finally {
         btn.innerText = txtOriginal;
         btn.disabled = false;
