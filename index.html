@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Monitoramento de Evasão</title>
     <style>
-        /* --- ESTILOS VISUAIS INTACTOS --- */
+        /* --- ESTILOS VISUAIS --- */
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; padding: 20px; color: #333; }
         .container { max-width: 1350px; margin: auto; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 15px; }
@@ -67,19 +67,10 @@
         <div class="card risco" onclick="filtrar('Risco Alto')"><h3 id="c-risco">0</h3><p>Risco Alto (51-65%)</p></div>
         <div class="card critico" onclick="filtrar('Desistente')"><h3 id="c-critico">0</h3><p>Desistente (>65%)</p></div>
     </div>
-
     <input id="busca" placeholder="🔍 Buscar aluno por nome..." style="width: 100%; padding: 12px; margin-bottom: 20px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 5px;">
-
     <table>
         <thead>
-            <tr>
-                <th style="width: 40px;">#</th>
-                <th>Aluno</th>
-                <th>Situação Geral</th>
-                <th>Disciplinas Críticas (Faltas | %)</th>
-                <th>Última Ação</th>
-                <th>Ações</th>
-            </tr>
+            <tr><th style="width: 40px;">#</th><th>Aluno</th><th>Situação Geral</th><th>Disciplinas Críticas (Faltas | %)</th><th>Última Ação</th><th>Ações</th></tr>
         </thead>
         <tbody id="tabela-corpo"></tbody>
     </table>
@@ -87,11 +78,53 @@
 </div>
 
 <div id="modalNovaTurma" class="modal-overlay">
-    <div class="modal-content" style="max-width: 400px;"><span class="close-btn" onclick="fecharModal('modalNovaTurma')">&times;</span><h3>🆕 Gerar Nova Turma</h3><label style="font-size:12px; font-weight:bold; color:#555;">Nome ou Número da Turma:</label><input type="text" id="txtNovaTurmaNum" placeholder="Ex: 11 ou 11A" class="input-modal"><label style="font-size:12px; font-weight:bold; color:#555;">Modalidade:</label><select id="selNovaTurmaMod" class="input-modal"><option value="PRESENCIAL">Presencial</option><option value="EAD (Semana)">EAD (Semana)</option><option value="EAD (Sábado)">EAD (Sábado)</option></select><label style="font-size:12px; font-weight:bold; color:#555;">Curso:</label><select id="selNovaTurmaCurso" class="input-modal"><option value="">Carregando cursos...</option></select><button id="btnSalvarTurma" onclick="executarCriarTurma()" style="background:#4CAF50; width:100%; padding:12px; margin-top:5px; font-size:16px; color: white; border: none; border-radius: 5px; cursor: pointer;">⚙️ Construir Turma na Planilha</button></div>
+    <div class="modal-content" style="max-width: 400px;">
+        <span class="close-btn" onclick="fecharModal('modalNovaTurma')">&times;</span>
+        <h3>🆕 Gerar Nova Turma</h3>
+        <label style="font-size:12px; font-weight:bold; color:#555;">Nome ou Número da Turma:</label>
+        <input type="text" id="txtNovaTurmaNum" placeholder="Ex: 11 ou 11A" class="input-modal">
+        <label style="font-size:12px; font-weight:bold; color:#555;">Modalidade:</label>
+        <select id="selNovaTurmaMod" class="input-modal" onchange="verificarEAD()">
+            <option value="PRESENCIAL">Presencial</option>
+            <option value="EAD (Semana)">EAD (Semana)</option>
+            <option value="EAD (Sábado)">EAD (Sábado)</option>
+        </select>
+        <label style="font-size:12px; font-weight:bold; color:#555;">Curso:</label>
+        <select id="selNovaTurmaCurso" class="input-modal" onchange="verificarEAD()">
+            <option value="">Carregando cursos...</option>
+        </select>
+        
+        <div id="divAulasEAD" style="display:none; background:#fff3e0; padding:15px; border-radius:5px; border:1px solid #ffe0b2; margin-bottom:15px;">
+            <p style="margin:0 0 10px 0; font-size:12px; font-weight:bold; color:#e65100;">⚠️ Turma EAD: Defina a quantidade de aulas:</p>
+            <div id="listaDisciplinasEAD"></div>
+        </div>
+        
+        <button id="btnSalvarTurma" onclick="executarCriarTurma()" style="background:#4CAF50; width:100%; padding:12px; margin-top:5px; font-size:16px; color: white; border: none; border-radius: 5px; cursor: pointer;">⚙️ Construir Turma na Planilha</button>
+    </div>
 </div>
+
 <div id="modalHist" class="modal-overlay"><div class="modal-content"><span class="close-btn" onclick="fecharModal('modalHist')">&times;</span><h3 id="modalTitulo">Histórico</h3><div id="modalLista" style="max-height: 400px; overflow-y: auto; margin-top: 15px;">Carregando...</div></div></div>
 <div id="modalAcao" class="modal-overlay"><div class="modal-content" style="max-width: 450px;"><span class="close-btn" onclick="fecharModal('modalAcao')">&times;</span><h3>Registrar Ação</h3><p id="acaoNomeAluno" style="font-weight:bold; color: #2196F3; font-size: 16px; margin-bottom: 15px;"></p><select id="selTipoAcao" class="input-modal"><option value="📞 Ligação Telefônica">📞 Ligação Telefônica</option><option value="📱 Mensagem WhatsApp">📱 Mensagem WhatsApp</option><option value="🤝 Reunião Presencial">🤝 Reunião Presencial</option><option value="🏠 Visita Domiciliar">🏠 Visita Domiciliar</option><option value="⚠️ Conselho Tutelar">⚠️ Encaminhado ao Conselho Tutelar</option><option value="📝 Outro">📝 Outro</option></select><textarea id="txtDetalheAcao" placeholder="Escreva o retorno da conversa..." style="height:80px;" class="input-modal"></textarea><button onclick="salvarAcaoPadronizada()" style="background:#2196F3; width:100%; padding:12px; margin-top:15px; color: white; border-radius: 5px; border: none;">💾 Salvar</button></div></div>
-<div id="modalImport" class="modal-overlay"><div class="modal-content"><span class="close-btn" onclick="fecharModal('modalImport')">&times;</span><h3>Importar Frequência</h3><select id="selImportMateria" class="input-modal"></select><textarea id="txtImport" style="height:100px; font-family:monospace;" placeholder="Cole aqui..." oninput="atualizarPrevia()" class="input-modal"></textarea><div style="display:flex; gap:10px;"><div style="flex:1;"><label style="font-size:11px;">Coluna Nome</label><input type="number" id="colNome" value="2" class="input-modal" onchange="atualizarPrevia()"></div><div style="flex:1;"><label style="font-size:11px;">Coluna Faltas</label><input type="number" id="colFaltas" value="5" class="input-modal" onchange="atualizarPrevia()"></div></div><div class="previa-box"><div style="font-size:12px; font-weight:bold; color:#9c27b0; margin-bottom:5px;">👁️ Prévia (Ativos Detectados):</div><table style="width:100%; font-size:11px; border-collapse: collapse;"><tbody id="tbodyPrevia"></tbody></table></div><button onclick="executarImportacao()" style="background:#9c27b0; width:100%; padding:12px; margin-top:15px; color:white; border:none; border-radius:5px;">💾 Salvar no Banco de Dados</button></div></div>
+
+<div id="modalImport" class="modal-overlay">
+    <div class="modal-content">
+        <span class="close-btn" onclick="fecharModal('modalImport')">&times;</span>
+        <h3>Importar Frequência</h3>
+        <select id="selImportMateria" class="input-modal"></select>
+        <textarea id="txtImport" style="height:100px; font-family:monospace;" placeholder="Cole aqui..." oninput="atualizarPrevia()" class="input-modal"></textarea>
+        <div style="display:flex; gap:10px;">
+            <div style="flex:1;"><label style="font-size:11px;">Coluna Nome (Nº)</label><input type="number" id="colNome" value="2" class="input-modal" oninput="atualizarPrevia()"></div>
+            <div style="flex:1;"><label style="font-size:11px;">Coluna Faltas (Nº)</label><input type="number" id="colFaltas" value="5" class="input-modal" oninput="atualizarPrevia()"></div>
+        </div>
+        <div class="previa-box">
+            <div style="font-size:12px; font-weight:bold; color:#9c27b0; margin-bottom:5px;">👁️ Prévia (Ativos Detectados):</div>
+            <table style="width:100%; font-size:11px; border-collapse: collapse;">
+                <tbody id="tbodyPrevia"><tr><td style="text-align:center; color:#888;">Aguardando dados...</td></tr></tbody>
+            </table>
+        </div>
+        <button id="btnSalvarImportacao" onclick="executarImportacao()" style="background:#9c27b0; width:100%; padding:12px; margin-top:15px; color:white; border:none; border-radius:5px; cursor:pointer;">💾 Salvar no Banco de Dados</button>
+    </div>
+</div>
 
 <script>
 const SHEET_ID = "1NBBtdsqbR4FzNyNsCuG3K3HdSRk6QzT-QR2mnjHEXJ0"; 
@@ -99,9 +132,10 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzY2GI8yO7NgoFwxdZ4j
 const CONFIG_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&headers=0&sheet=Config`;
 const HIST_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&headers=0&sheet=Historico`;
 const MATRIZES_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&headers=0&sheet=Matrizes`;
-const BANCO_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&headers=0&sheet=BD_Frequencias`; // NOVO LINK
+const BANCO_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&headers=0&sheet=BD_Frequencias`; 
 
-let historicoGlobal = [], historicoSistema = [], estruturaEscola = {}, dadosConsolidados = [], dadosFiltrados = [], listaMateriasSimples = [], alunoAcaoPendente = "";
+let historicoGlobal = [], historicoSistema = [], estruturaEscola = {}, dadosConsolidados = [], dadosFiltrados = [], listaMateriasSimples = [], alunoAcaoPendente = "", dadosProntosParaSalvar = [];
+let matrizesGlobais = []; 
 
 window.onload = carregarTudo;
 
@@ -129,7 +163,6 @@ function carregarConfig() {
             if (t && a && c) {
                 if (!estruturaEscola[t]) estruturaEscola[t] = [];
                 estruturaEscola[t].push({ disciplina: d, aba: a, cargaTotal: c });
-                // GRAVAMOS A DISCIPLINA PARA O NOVO BANCO
                 listaMateriasSimples.push({ nome: `${t} - ${d}`, aba: a, turma: t, disciplina: d }); 
             }
         });
@@ -151,8 +184,21 @@ function carregarMatrizes() {
             const json = JSON.parse(data.substring(47).slice(0, -2));
             const selectCurso = document.getElementById("selNovaTurmaCurso");
             selectCurso.innerHTML = "<option value=''>Escolha o Curso...</option>";
+            matrizesGlobais = [];
             let cursosEncontrados = new Set();
-            json.table.rows.slice(1).forEach(r => { if(r.c[0]?.v) cursosEncontrados.add(r.c[0].v); });
+            
+            json.table.rows.slice(1).forEach(r => { 
+                if(r.c[0]?.v) {
+                    cursosEncontrados.add(r.c[0].v); 
+                    matrizesGlobais.push({
+                        curso: r.c[0].v,
+                        disciplina: r.c[1]?.v,
+                        codigo: r.c[2]?.v,
+                        ch: r.c[3]?.v
+                    });
+                }
+            });
+            
             cursosEncontrados.forEach(c => {
                 let opt = document.createElement("option"); opt.value = c; opt.textContent = c; selectCurso.appendChild(opt);
             });
@@ -160,7 +206,34 @@ function carregarMatrizes() {
     });
 }
 
-function abrirCriarTurma() { document.getElementById("modalNovaTurma").style.display = "flex"; }
+function verificarEAD() {
+    let mod = document.getElementById("selNovaTurmaMod").value;
+    let curso = document.getElementById("selNovaTurmaCurso").value;
+    let divAulas = document.getElementById("divAulasEAD");
+    let listaHTML = document.getElementById("listaDisciplinasEAD");
+    
+    if(mod.includes("EAD") && curso !== "") {
+        let materias = matrizesGlobais.filter(m => m.curso === curso);
+        let html = "";
+        materias.forEach(mat => {
+            html += `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                <span style="font-size:11px; color:#555;">${mat.disciplina} (CH: ${mat.ch}h)</span>
+                <input type="number" class="input-aulas-ead" data-codigo="${mat.codigo}" placeholder="Aulas" style="width:70px; padding:5px; border:1px solid #ccc; border-radius:3px;">
+            </div>`;
+        });
+        listaHTML.innerHTML = html;
+        divAulas.style.display = "block"; 
+    } else {
+        divAulas.style.display = "none"; 
+        listaHTML.innerHTML = "";
+    }
+}
+
+function abrirCriarTurma() { 
+    document.getElementById("modalNovaTurma").style.display = "flex"; 
+    verificarEAD(); 
+}
 
 async function executarCriarTurma() {
     let num = document.getElementById("txtNovaTurmaNum").value.trim(); 
@@ -169,6 +242,16 @@ async function executarCriarTurma() {
 
     if(!num || !curso) return alert("Por favor, preencha o nome/número e selecione o curso.");
 
+    let customAulas = {};
+    if (mod.includes("EAD")) {
+        let inputsEAD = document.querySelectorAll(".input-aulas-ead");
+        for (let i = 0; i < inputsEAD.length; i++) {
+            let val = inputsEAD[i].value;
+            if(!val) return alert("Por favor, preencha a quantidade de aulas de TODAS as disciplinas EAD.");
+            customAulas[inputsEAD[i].getAttribute("data-codigo")] = val;
+        }
+    }
+
     let btn = document.getElementById("btnSalvarTurma");
     btn.innerText = "⏳ Configurando Turma... Aguarde...";
     btn.disabled = true;
@@ -176,71 +259,48 @@ async function executarCriarTurma() {
     try {
         await fetch(SCRIPT_URL, {
             method: "POST",
-            body: JSON.stringify({ tipo: "CRIAR_TURMA", numeroTurma: num, modalidade: mod, curso: curso })
+            body: JSON.stringify({ tipo: "CRIAR_TURMA", numeroTurma: num, modalidade: mod, curso: curso, customAulas: customAulas })
         });
         alert("✅ Turma criada! Tudo pronto para receber dados.");
         fecharModal('modalNovaTurma');
         document.getElementById("txtNovaTurmaNum").value = "";
+        verificarEAD();
         carregarTudo(); 
     } catch(e) { alert("Erro de comunicação."); } 
     finally { btn.innerText = "⚙️ Construir Turma na Planilha"; btn.disabled = false; }
 }
 
-// ----------------------------------------------------
-// A GRANDE MUDANÇA: AGORA LÊ DO BD_Frequencias DE UMA SÓ VEZ
-// ----------------------------------------------------
 async function processarTurma(turma) {
     if (!turma) return;
     document.getElementById("loading").style.display = "block";
     verificarDataImportacao(turma);
-    
     let mapaAlunos = {}, materias = estruturaEscola[turma];
-    
     try {
-        // Faz APENAS UM download gigantesco e muito rápido
         const res = await fetch(`${BANCO_URL}&t=${Date.now()}`);
         const txt = await res.text();
         const json = JSON.parse(txt.substring(47).slice(0,-2));
-        
         let rawRows = [];
-        if(json.table.rows.length > 1) { rawRows = json.table.rows.slice(1); } // Pula cabeçalho
-
-        // Filtra só os alunos da turma selecionada
+        if(json.table.rows.length > 1) { rawRows = json.table.rows.slice(1); } 
         let dadosDestaTurma = rawRows.filter(r => r.c[0]?.v === turma);
 
         dadosDestaTurma.forEach(linha => {
-            let discBD = linha.c[1]?.v;
-            let nome = linha.c[2]?.v;
-            let faltas = linha.c[3]?.v || 0;
-
+            let discBD = linha.c[1]?.v, nome = linha.c[2]?.v, faltas = linha.c[3]?.v || 0;
             if (nome) {
-                // Acha a carga horária lá nas Configurações
                 let matInfo = materias.find(m => m.disciplina === discBD);
                 if (!matInfo) return; 
                 let carga = matInfo.cargaTotal;
-
                 if (!mapaAlunos[nome]) mapaAlunos[nome] = { nome, status: "OK", prioridade: 0, detalhes: [] };
-                
-                let perc = (faltas / carga) * 100;
-                let sMat = "OK";
+                let perc = (faltas / carga) * 100, sMat = "OK";
                 if (perc > 65) sMat = "Desistente"; else if (perc > 50) sMat = "Risco Alto"; else if (perc > 25) sMat = "Atenção"; else if (perc >= 15) sMat = "Alerta";
-                
                 if (sMat !== "OK") mapaAlunos[nome].detalhes.push({ disciplina: discBD, perc: perc.toFixed(0) + "%", faltas, status: sMat });
-                
                 let pesos = {"OK": 0, "Alerta": 1, "Atenção": 2, "Risco Alto": 3, "Desistente": 4};
                 let p = pesos[sMat];
                 if (p > mapaAlunos[nome].prioridade) { mapaAlunos[nome].prioridade = p; mapaAlunos[nome].status = sMat; }
             }
         });
-
         dadosConsolidados = Object.values(mapaAlunos).sort((a,b) => b.prioridade - a.prioridade);
         redefinirFiltro();
-    } catch(e) {
-        console.log("Banco de dados ainda vazio ou com erro.", e);
-        dadosConsolidados = [];
-        redefinirFiltro();
-    }
-    
+    } catch(e) { dadosConsolidados = []; redefinirFiltro(); }
     document.getElementById("loading").style.display = "none";
 }
 
@@ -269,6 +329,7 @@ function mostrar() {
         tbody.appendChild(tr);
     });
 }
+
 function verificarDataImportacao(t) {
     let div = document.getElementById("dataAtualizacao"); div.style.display = "inline-block";
     let imp = historicoSistema.filter(h => h.turma === t);
@@ -281,33 +342,102 @@ function obterUltimaAcao(n) { let a = historicoGlobal.filter(h => h.aluno === n)
 function verHistorico(n) { document.getElementById("modalHist").style.display = "flex"; document.getElementById("modalTitulo").innerText = "Histórico: " + n; let r = historicoGlobal.filter(h => h.aluno === n).reverse(), l = document.getElementById("modalLista"); l.innerHTML = r.length ? r.map(a => `<div class="hist-item"><span class="hist-data">📅 ${a.data}</span><div class="hist-texto">${a.acao}</div></div>`).join("") : "<p>Vazio</p>"; }
 function abrirModalAcao(n) { alunoAcaoPendente = n; document.getElementById("acaoNomeAluno").innerText = n; document.getElementById("modalAcao").style.display = "flex"; }
 async function salvarAcaoPadronizada() { let t = document.getElementById("selTipoAcao").value, d = document.getElementById("txtDetalheAcao").value; if (!d.trim()) return alert("Preencha detalhes"); document.getElementById("modalAcao").style.display = "none"; try { await fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ turma: document.getElementById("selTurma").value, aluno: alunoAcaoPendente, faltas: "-", data: new Date().toLocaleDateString('pt-BR'), acao: `[${t}] ${d}` }) }); alert("Salvo!"); carregarTudo(); } catch (e) { alert("Erro"); } }
-function abrirImportacao() { document.getElementById("modalImport").style.display = "flex"; }
-function atualizarPrevia() { let t = document.getElementById("txtImport").value.trim(), n = parseInt(document.getElementById("colNome").value)-1, f = parseInt(document.getElementById("colFaltas").value)-1, b = document.getElementById("tbodyPrevia"); dadosProntosParaSalvar = []; b.innerHTML = ""; if(!t) return; t.split("\n").forEach(l => { let c = l.split("\t"); if(c.length > Math.max(n, f)) { let nm = c[n]?.trim(), flRaw = c[f]?.trim(); if(nm && nm.length > 2 && flRaw !== "" && flRaw !== undefined) { dadosProntosParaSalvar.push([nm, flRaw.replace(/\D/g,"") || "0"]); if(dadosProntosParaSalvar.length <= 5) b.innerHTML += `<tr><td>${nm}</td><td>${flRaw.replace(/\D/g,"") || "0"}</td></tr>`; } } }); }
+
+function abrirImportacao() { 
+    document.getElementById("modalImport").style.display = "flex"; 
+}
 
 // ----------------------------------------------------
-// O NOVO IMPORTADOR: Envia para o Banco de Dados Central
+// A MÁGICA DE AUTOCORREÇÃO DO IMPORTADOR
 // ----------------------------------------------------
+function atualizarPrevia() {
+    let txt = document.getElementById("txtImport").value.trim();
+    let b = document.getElementById("tbodyPrevia");
+    dadosProntosParaSalvar = [];
+    b.innerHTML = "";
+    
+    if (!txt) {
+        b.innerHTML = "<tr><td colspan='2' style='text-align:center; color:#888;'>Aguardando dados...</td></tr>";
+        return;
+    }
+
+    let n = parseInt(document.getElementById("colNome").value) - 1 || 0;
+    let f = parseInt(document.getElementById("colFaltas").value) - 1 || 1;
+
+    txt.split(/\r?\n/).forEach(l => {
+        if(!l.trim()) return;
+        
+        let c = l.split("\t");
+        if(c.length === 1 && l.includes(";")) c = l.split(";");
+        if(c.length === 1 && l.includes(",")) c = l.split(",");
+
+        let nm = c[n];
+        let flRaw = c[f];
+        
+        // AUTOCORREÇÃO: Se as colunas que você indicou não existirem, mas o texto tiver colunas,
+        // ele pega automaticamente o primeiro texto da esquerda e o último número da direita!
+        if (nm === undefined || flRaw === undefined) {
+            if (c.length >= 2) {
+                nm = c[0];
+                flRaw = c[c.length - 1];
+            }
+        }
+
+        if (nm) nm = nm.trim();
+        if (flRaw) flRaw = flRaw.trim();
+
+        if (nm && nm.length > 2 && flRaw !== "" && flRaw !== undefined) {
+            // Ignorar cabeçalho copiado sem querer
+            if (nm.toLowerCase() === "aluno" || nm.toLowerCase() === "nome") return;
+
+            let faltas = flRaw.replace(/\D/g, "");
+            if (faltas === "") faltas = "0";
+
+            dadosProntosParaSalvar.push([nm, faltas]);
+            
+            if (dadosProntosParaSalvar.length <= 5) {
+                b.innerHTML += `<tr><td style="border:1px solid #ddd; padding:4px;">${nm}</td><td style="border:1px solid #ddd; padding:4px; text-align:center;">${faltas}</td></tr>`;
+            }
+        }
+    });
+
+    if (dadosProntosParaSalvar.length === 0) {
+        b.innerHTML = `<tr><td colspan='2' style='text-align:center; color:red; padding:10px;'><b>Nenhum dado válido detectado.</b><br><small>Verifique os números das colunas (Nome e Faltas).</small></td></tr>`;
+    } else {
+        b.innerHTML += `<tr><td colspan='2' style='text-align:center; background:#e8f5e9; color:#2e7d32; font-weight:bold; padding:5px;'>✅ ${dadosProntosParaSalvar.length} alunos capturados!</td></tr>`;
+    }
+}
+
 async function executarImportacao() { 
     let abaVirtualId = document.getElementById("selImportMateria").value; 
-    if(!abaVirtualId || !dadosProntosParaSalvar.length) return alert("Selecione matéria e cole dados"); 
     
-    // Descobre os dados completos da matéria a partir da escolha
+    atualizarPrevia(); 
+
+    if(!abaVirtualId || !dadosProntosParaSalvar.length) {
+        return alert("Selecione a matéria e cole dados válidos."); 
+    }
+    
     let inf = listaMateriasSimples.find(m => m.aba === abaVirtualId); 
-    
+    let btn = document.getElementById("btnSalvarImportacao");
+    let txtOriginal = btn.innerText;
+    btn.innerText = "⏳ A guardar dados...";
+    btn.disabled = true;
+
     try { 
         await Promise.all([ 
-            fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ 
-                tipo: "IMPORTAR", 
-                turma: inf.turma,          // Envia o nome da Turma
-                disciplina: inf.disciplina, // Envia o nome da Disciplina
-                lista: dadosProntosParaSalvar // Só envia a lista, sem cabeçalho!
-            }) }), 
+            fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ tipo: "IMPORTAR", turma: inf.turma, disciplina: inf.disciplina, lista: dadosProntosParaSalvar }) }), 
             fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ turma: inf.turma, aluno: "[SISTEMA]", faltas: "-", data: new Date().toLocaleDateString('pt-BR'), acao: "Importação: " + inf.nome }) }) 
         ]); 
-        alert("Sucesso! Alunos guardados no Banco de Dados."); 
+        alert(`Sucesso! ${dadosProntosParaSalvar.length} alunos guardados no Banco de Dados.`); 
         fecharModal('modalImport'); 
+        document.getElementById("txtImport").value = "";
         carregarTudo(); 
-    } catch(e) { alert("Erro ao salvar."); } 
+    } catch(e) { 
+        alert("Erro ao guardar."); 
+    } finally {
+        btn.innerText = txtOriginal;
+        btn.disabled = false;
+    }
 }
 
 function fecharModal(id) { document.getElementById(id).style.display = "none"; }
