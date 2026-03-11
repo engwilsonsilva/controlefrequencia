@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Monitoramento de Evasão</title>
     <style>
-        /* --- ESTILOS VISUAIS INTACTOS --- */
+        /* --- ESTILOS VISUAIS --- */
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; padding: 20px; color: #333; }
         .container { max-width: 1350px; margin: auto; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 15px; }
@@ -108,7 +108,25 @@
 
 <div id="modalHist" class="modal-overlay"><div class="modal-content"><span class="close-btn" onclick="fecharModal('modalHist')">&times;</span><h3 id="modalTitulo">Histórico</h3><div id="modalLista" style="max-height: 400px; overflow-y: auto; margin-top: 15px;">Carregando...</div></div></div>
 <div id="modalAcao" class="modal-overlay"><div class="modal-content" style="max-width: 450px;"><span class="close-btn" onclick="fecharModal('modalAcao')">&times;</span><h3>Registrar Ação</h3><p id="acaoNomeAluno" style="font-weight:bold; color: #2196F3; font-size: 16px; margin-bottom: 15px;"></p><select id="selTipoAcao" class="input-modal"><option value="📞 Ligação Telefônica">📞 Ligação Telefônica</option><option value="📱 Mensagem WhatsApp">📱 Mensagem WhatsApp</option><option value="🤝 Reunião Presencial">🤝 Reunião Presencial</option><option value="🏠 Visita Domiciliar">🏠 Visita Domiciliar</option><option value="⚠️ Conselho Tutelar">⚠️ Encaminhado ao Conselho Tutelar</option><option value="📝 Outro">📝 Outro</option></select><textarea id="txtDetalheAcao" placeholder="Escreva o retorno da conversa..." style="height:80px;" class="input-modal"></textarea><button onclick="salvarAcaoPadronizada()" style="background:#2196F3; width:100%; padding:12px; margin-top:15px; color: white; border-radius: 5px; border: none;">💾 Salvar</button></div></div>
-<div id="modalImport" class="modal-overlay"><div class="modal-content"><span class="close-btn" onclick="fecharModal('modalImport')">&times;</span><h3>Importar Frequência</h3><select id="selImportMateria" class="input-modal"></select><textarea id="txtImport" style="height:100px; font-family:monospace;" placeholder="Cole aqui..." oninput="atualizarPrevia()" class="input-modal"></textarea><div style="display:flex; gap:10px;"><div style="flex:1;"><label style="font-size:11px;">Coluna Nome</label><input type="number" id="colNome" value="2" class="input-modal" onchange="atualizarPrevia()"></div><div style="flex:1;"><label style="font-size:11px;">Coluna Faltas</label><input type="number" id="colFaltas" value="5" class="input-modal" onchange="atualizarPrevia()"></div></div><div class="previa-box"><div style="font-size:12px; font-weight:bold; color:#9c27b0; margin-bottom:5px;">👁️ Prévia (Ativos Detectados):</div><table style="width:100%; font-size:11px; border-collapse: collapse;"><tbody id="tbodyPrevia"></tbody></table></div><button onclick="executarImportacao()" style="background:#9c27b0; width:100%; padding:12px; margin-top:15px; color:white; border:none; border-radius:5px;">💾 Salvar no Banco de Dados</button></div></div>
+<div id="modalImport" class="modal-overlay">
+    <div class="modal-content">
+        <span class="close-btn" onclick="fecharModal('modalImport')">&times;</span>
+        <h3>Importar Frequência</h3>
+        <select id="selImportMateria" class="input-modal"></select>
+        <textarea id="txtImport" style="height:100px; font-family:monospace;" placeholder="Cole aqui..." oninput="atualizarPrevia()" class="input-modal"></textarea>
+        <div style="display:flex; gap:10px;">
+            <div style="flex:1;"><label style="font-size:11px;">Coluna Nome</label><input type="number" id="colNome" value="2" class="input-modal" onchange="atualizarPrevia()"></div>
+            <div style="flex:1;"><label style="font-size:11px;">Coluna Faltas</label><input type="number" id="colFaltas" value="5" class="input-modal" onchange="atualizarPrevia()"></div>
+        </div>
+        <div class="previa-box">
+            <div style="font-size:12px; font-weight:bold; color:#9c27b0; margin-bottom:5px;">👁️ Prévia (Ativos Detectados):</div>
+            <table style="width:100%; font-size:11px; border-collapse: collapse;">
+                <tbody id="tbodyPrevia"><tr><td style="text-align:center; color:#888;">Aguardando dados...</td></tr></tbody>
+            </table>
+        </div>
+        <button id="btnSalvarImportacao" onclick="executarImportacao()" style="background:#9c27b0; width:100%; padding:12px; margin-top:15px; color:white; border:none; border-radius:5px;">💾 Salvar no Banco de Dados</button>
+    </div>
+</div>
 
 <script>
 const SHEET_ID = "1NBBtdsqbR4FzNyNsCuG3K3HdSRk6QzT-QR2mnjHEXJ0"; 
@@ -118,8 +136,9 @@ const HIST_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx
 const MATRIZES_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&headers=0&sheet=Matrizes`;
 const BANCO_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&headers=0&sheet=BD_Frequencias`; 
 
-let historicoGlobal = [], historicoSistema = [], estruturaEscola = [], dadosConsolidados = [], dadosFiltrados = [], listaMateriasSimples = [], alunoAcaoPendente = "";
-let matrizesGlobais = []; // Guarda a receita dos cursos na memória
+// Variável dadosProntosParaSalvar adicionada corretamente
+let historicoGlobal = [], historicoSistema = [], estruturaEscola = [], dadosConsolidados = [], dadosFiltrados = [], listaMateriasSimples = [], alunoAcaoPendente = "", dadosProntosParaSalvar = [];
+let matrizesGlobais = []; 
 
 window.onload = carregarTudo;
 
@@ -162,9 +181,6 @@ function carregarConfig() {
     });
 }
 
-// ----------------------------------------------------
-// NOVIDADE: Verifica se é EAD para abrir os campos extras
-// ----------------------------------------------------
 function carregarMatrizes() {
     fetch(`${MATRIZES_URL}&t=${Date.now()}`).then(res => res.text()).then(data => {
         try {
@@ -199,11 +215,9 @@ function verificarEAD() {
     let divAulas = document.getElementById("divAulasEAD");
     let listaHTML = document.getElementById("listaDisciplinasEAD");
     
-    // Se a modalidade for EAD e o curso estiver selecionado
     if(mod.includes("EAD") && curso !== "") {
         let materias = matrizesGlobais.filter(m => m.curso === curso);
         let html = "";
-        
         materias.forEach(mat => {
             html += `
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
@@ -211,18 +225,17 @@ function verificarEAD() {
                 <input type="number" class="input-aulas-ead" data-codigo="${mat.codigo}" placeholder="Aulas" style="width:70px; padding:5px; border:1px solid #ccc; border-radius:3px;">
             </div>`;
         });
-        
         listaHTML.innerHTML = html;
-        divAulas.style.display = "block"; // Mostra a caixa amarela
+        divAulas.style.display = "block"; 
     } else {
-        divAulas.style.display = "none"; // Esconde se for Presencial
+        divAulas.style.display = "none"; 
         listaHTML.innerHTML = "";
     }
 }
 
 function abrirCriarTurma() { 
     document.getElementById("modalNovaTurma").style.display = "flex"; 
-    verificarEAD(); // Testa se já precisa mostrar os campos
+    verificarEAD(); 
 }
 
 async function executarCriarTurma() {
@@ -232,7 +245,6 @@ async function executarCriarTurma() {
 
     if(!num || !curso) return alert("Por favor, preencha o nome/número e selecione o curso.");
 
-    // NOVIDADE: Coleta as aulas que você digitou
     let customAulas = {};
     if (mod.includes("EAD")) {
         let inputsEAD = document.querySelectorAll(".input-aulas-ead");
@@ -250,13 +262,7 @@ async function executarCriarTurma() {
     try {
         await fetch(SCRIPT_URL, {
             method: "POST",
-            body: JSON.stringify({ 
-                tipo: "CRIAR_TURMA", 
-                numeroTurma: num, 
-                modalidade: mod, 
-                curso: curso,
-                customAulas: customAulas // Envia os números pro Google
-            })
+            body: JSON.stringify({ tipo: "CRIAR_TURMA", numeroTurma: num, modalidade: mod, curso: curso, customAulas: customAulas })
         });
         alert("✅ Turma criada! Tudo pronto para receber dados.");
         fecharModal('modalNovaTurma');
@@ -267,9 +273,6 @@ async function executarCriarTurma() {
     finally { btn.innerText = "⚙️ Construir Turma na Planilha"; btn.disabled = false; }
 }
 
-// ----------------------------------------------------
-// ROTINAS DE EXIBIÇÃO E FUNCIONAMENTO NORMAL
-// ----------------------------------------------------
 async function processarTurma(turma) {
     if (!turma) return;
     document.getElementById("loading").style.display = "block";
@@ -329,6 +332,7 @@ function mostrar() {
         tbody.appendChild(tr);
     });
 }
+
 function verificarDataImportacao(t) {
     let div = document.getElementById("dataAtualizacao"); div.style.display = "inline-block";
     let imp = historicoSistema.filter(h => h.turma === t);
@@ -341,21 +345,86 @@ function obterUltimaAcao(n) { let a = historicoGlobal.filter(h => h.aluno === n)
 function verHistorico(n) { document.getElementById("modalHist").style.display = "flex"; document.getElementById("modalTitulo").innerText = "Histórico: " + n; let r = historicoGlobal.filter(h => h.aluno === n).reverse(), l = document.getElementById("modalLista"); l.innerHTML = r.length ? r.map(a => `<div class="hist-item"><span class="hist-data">📅 ${a.data}</span><div class="hist-texto">${a.acao}</div></div>`).join("") : "<p>Vazio</p>"; }
 function abrirModalAcao(n) { alunoAcaoPendente = n; document.getElementById("acaoNomeAluno").innerText = n; document.getElementById("modalAcao").style.display = "flex"; }
 async function salvarAcaoPadronizada() { let t = document.getElementById("selTipoAcao").value, d = document.getElementById("txtDetalheAcao").value; if (!d.trim()) return alert("Preencha detalhes"); document.getElementById("modalAcao").style.display = "none"; try { await fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ turma: document.getElementById("selTurma").value, aluno: alunoAcaoPendente, faltas: "-", data: new Date().toLocaleDateString('pt-BR'), acao: `[${t}] ${d}` }) }); alert("Salvo!"); carregarTudo(); } catch (e) { alert("Erro"); } }
-function abrirImportacao() { document.getElementById("modalImport").style.display = "flex"; }
-function atualizarPrevia() { let t = document.getElementById("txtImport").value.trim(), n = parseInt(document.getElementById("colNome").value)-1, f = parseInt(document.getElementById("colFaltas").value)-1, b = document.getElementById("tbodyPrevia"); dadosProntosParaSalvar = []; b.innerHTML = ""; if(!t) return; t.split("\n").forEach(l => { let c = l.split("\t"); if(c.length > Math.max(n, f)) { let nm = c[n]?.trim(), flRaw = c[f]?.trim(); if(nm && nm.length > 2 && flRaw !== "" && flRaw !== undefined) { dadosProntosParaSalvar.push([nm, flRaw.replace(/\D/g,"") || "0"]); if(dadosProntosParaSalvar.length <= 5) b.innerHTML += `<tr><td>${nm}</td><td>${flRaw.replace(/\D/g,"") || "0"}</td></tr>`; } } }); }
+
+function abrirImportacao() { 
+    document.getElementById("modalImport").style.display = "flex"; 
+}
+
+// ----------------------------------------------------
+// PRÉVIA RESTAURADA E CORRIGIDA
+// ----------------------------------------------------
+function atualizarPrevia() {
+    let rawText = document.getElementById("txtImport").value;
+    let colNome = parseInt(document.getElementById("colNome").value) - 1; 
+    let colFaltas = parseInt(document.getElementById("colFaltas").value) - 1;
+    let tbody = document.getElementById("tbodyPrevia");
+    
+    dadosProntosParaSalvar = []; 
+    tbody.innerHTML = "";
+    
+    if(!rawText.trim()) {
+        tbody.innerHTML = "<tr><td colspan='2' style='text-align:center;'>Aguardando dados...</td></tr>";
+        return;
+    }
+
+    let linhas = rawText.split(/\r?\n/);
+
+    linhas.forEach(linha => {
+        if (!linha.trim()) return;
+
+        let colunas = linha.split("\t");
+        if (colunas.length > Math.max(colNome, colFaltas)) {
+            let nm = colunas[colNome]?.trim();
+            let faltasTexto = colunas[colFaltas]?.trim();
+            
+            if (nm && nm.length >= 2 && faltasTexto !== "" && faltasTexto !== undefined) {
+                let numeroFaltas = faltasTexto.replace(/\D/g,"") || "0";
+                dadosProntosParaSalvar.push([nm, numeroFaltas]);
+                
+                if (dadosProntosParaSalvar.length <= 5) {
+                    tbody.innerHTML += `<tr><td style="border:1px solid #ddd; padding:4px;">${nm}</td><td style="border:1px solid #ddd; padding:4px;">${numeroFaltas}</td></tr>`;
+                }
+            }
+        }
+    });
+
+    if(dadosProntosParaSalvar.length === 0) {
+        tbody.innerHTML = "<tr><td colspan='2' style='text-align:center; color:red;'>Nenhum dado válido detectado.</td></tr>";
+    }
+}
+
 async function executarImportacao() { 
     let abaVirtualId = document.getElementById("selImportMateria").value; 
-    if(!abaVirtualId || !dadosProntosParaSalvar.length) return alert("Selecione matéria e cole dados"); 
+    
+    atualizarPrevia(); // Força a atualização da lista antes de salvar
+
+    if(!abaVirtualId || !dadosProntosParaSalvar.length) {
+        return alert("Selecione matéria e cole dados válidos."); 
+    }
+    
     let inf = listaMateriasSimples.find(m => m.aba === abaVirtualId); 
+    let btn = document.getElementById("btnSalvarImportacao");
+    let txtOriginal = btn.innerText;
+    btn.innerText = "⏳ Salvando dados...";
+    btn.disabled = true;
+
     try { 
         await Promise.all([ 
             fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ tipo: "IMPORTAR", turma: inf.turma, disciplina: inf.disciplina, lista: dadosProntosParaSalvar }) }), 
             fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ turma: inf.turma, aluno: "[SISTEMA]", faltas: "-", data: new Date().toLocaleDateString('pt-BR'), acao: "Importação: " + inf.nome }) }) 
         ]); 
-        alert("Sucesso! Alunos guardados no Banco de Dados."); 
-        fecharModal('modalImport'); carregarTudo(); 
-    } catch(e) { alert("Erro ao salvar."); } 
+        alert(`Sucesso! ${dadosProntosParaSalvar.length} alunos guardados no Banco de Dados.`); 
+        fecharModal('modalImport'); 
+        document.getElementById("txtImport").value = ""; // Limpa a caixa
+        carregarTudo(); 
+    } catch(e) { 
+        alert("Erro ao salvar."); 
+    } finally {
+        btn.innerText = txtOriginal;
+        btn.disabled = false;
+    }
 }
+
 function fecharModal(id) { document.getElementById(id).style.display = "none"; }
 document.getElementById("busca").addEventListener("input", function() { let t = this.value.toLowerCase(); dadosFiltrados = dadosConsolidados.filter(a => a.nome.toLowerCase().includes(t)); mostrar(); });
 </script>
